@@ -1,11 +1,7 @@
 import { Link } from 'react-router'
-import { useDispatch, useSelector } from 'react-redux'
-
-import { logout } from '../../features/auth.slice.js'
+import { useSelector } from 'react-redux'
 
 export default function DashboardProfesional() {
-  const dispatch = useDispatch()
-
   const { user } = useSelector(
     (state) => state.auth
   )
@@ -15,19 +11,16 @@ export default function DashboardProfesional() {
     user?.email ||
     'Profesional'
 
-  const handleLogout = () => {
-    dispatch(logout())
-  }
-
   return (
     <main className="dashboard-page">
 
-      {/* HEADER */}
+      {/* ENCABEZADO */}
 
       <section className="dashboard-hero">
+
         <div>
           <p className="dashboard-eyebrow">
-            Panel profesional
+            Inicio
           </p>
 
           <h1>
@@ -35,60 +28,119 @@ export default function DashboardProfesional() {
           </h1>
 
           <p>
-            Tené a mano tu agenda,
-            pacientes y accesos rápidos.
+            Registrá rápido lo importante
+            y seguí con tu día.
           </p>
         </div>
 
-        <button
-          type="button"
-          className="dashboard-logout"
-          onClick={handleLogout}
-        >
-          Cerrar sesión
-        </button>
       </section>
 
-      {/* ACCIÓN PRINCIPAL */}
+      {/* ACCIONES PRINCIPALES */}
 
-      <section className="dashboard-primary-action">
-        <div>
-          <span className="dashboard-primary-label">
-            Acción rápida
-          </span>
-
-          <h2>
-            Registrar una sesión
-          </h2>
-
-          <p>
-            Entrá a la agenda,
-            elegí el turno y registrá
-            la sesión del paciente.
-          </p>
-        </div>
+      <section className="dashboard-main-actions">
 
         <Link
           to="/agenda"
-          className="dashboard-session-button"
+          className="dashboard-main-action dashboard-main-session"
         >
-          📝 Registrar sesión
-        </Link>
-      </section>
+          <div className="dashboard-main-icon">
+            📝
+          </div>
 
-      {/* ACCESOS */}
+          <div className="dashboard-main-content">
 
-      <section>
-        <div className="dashboard-section-heading">
-          <div>
+            <span className="dashboard-main-label">
+              Al terminar una atención
+            </span>
+
             <h2>
-              Accesos rápidos
+              Registrar sesión
             </h2>
 
             <p>
-              Lo que usás todos los días.
+              Elegí el turno y anotá
+              rápidamente lo trabajado.
+            </p>
+
+          </div>
+
+          <span className="dashboard-main-arrow">
+            →
+          </span>
+        </Link>
+
+        <Link
+          to="/nota-rapida"
+          className="dashboard-main-action dashboard-main-note"
+        >
+          <div className="dashboard-main-icon">
+            ✍️
+          </div>
+
+          <div className="dashboard-main-content">
+
+            <span className="dashboard-main-label">
+              Mientras hablás con alguien
+            </span>
+
+            <h2>
+              Nueva nota rápida
+            </h2>
+
+            <p>
+              Elegí un paciente y registrá
+              una conversación u observación.
+            </p>
+
+          </div>
+
+          <span className="dashboard-main-arrow">
+            →
+          </span>
+        </Link>
+
+      </section>
+
+      {/* TEXTO DE APOYO */}
+
+      <section className="dashboard-focus-message">
+
+        <div className="dashboard-focus-icon">
+          ✓
+        </div>
+
+        <div>
+          <strong>
+            Lo importante primero
+          </strong>
+
+          <p>
+            Sesiones y notas quedan como
+            acciones principales. El resto
+            de la información sigue disponible
+            dentro de cada paciente.
+          </p>
+        </div>
+
+      </section>
+
+      {/* ACCESOS SECUNDARIOS */}
+
+      <section className="dashboard-secondary-section">
+
+        <div className="dashboard-section-heading">
+
+          <div>
+            <h2>
+              Otras herramientas
+            </h2>
+
+            <p>
+              Accesos para organizar
+              y consultar información.
             </p>
           </div>
+
         </div>
 
         <div className="dashboard-actions-grid">
@@ -107,7 +159,8 @@ export default function DashboardProfesional() {
               </strong>
 
               <span>
-                Ver turnos y sesiones
+                Ver los turnos del día,
+                semana o mes
               </span>
             </div>
           </Link>
@@ -126,7 +179,8 @@ export default function DashboardProfesional() {
               </strong>
 
               <span>
-                Fichas e información clínica
+                Fichas, historial
+                e información clínica
               </span>
             </div>
           </Link>
@@ -145,31 +199,13 @@ export default function DashboardProfesional() {
               </strong>
 
               <span>
-                Configurar turnos semanales
-              </span>
-            </div>
-          </Link>
-
-          <Link
-            to="/agenda"
-            className="dashboard-action-card"
-          >
-            <div className="dashboard-action-icon">
-              +
-            </div>
-
-            <div>
-              <strong>
-                Nuevo turno
-              </strong>
-
-              <span>
-                Crear un turno manual
+                Organizar la agenda semanal
               </span>
             </div>
           </Link>
 
         </div>
+
       </section>
 
     </main>

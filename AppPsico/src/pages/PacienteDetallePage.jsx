@@ -7,6 +7,7 @@ import ResponsablesPaciente from '../components/pacientes/ResponsablesPaciente.j
 import NotasPaciente from '../components/pacientes/NotasPaciente.jsx'
 import PlanesTrabajoPaciente from '../components/pacientes/PlanesTrabajoPaciente.jsx'
 import SesionesPaciente from '../components/pacientes/SesionesPaciente.jsx'
+import EditarInformacionClinicaForm from '../components/pacientes/EditarInformacionClinicaForm.jsx'
 
 export default function PacienteDetallePage() {
   const { id } = useParams()
@@ -25,6 +26,11 @@ export default function PacienteDetallePage() {
     error,
     setError
   ] = useState(null)
+
+  const [
+    editandoClinica,
+    setEditandoClinica
+  ] = useState(false)
 
   useEffect(() => {
     const cargarPaciente = async () => {
@@ -149,6 +155,7 @@ export default function PacienteDetallePage() {
         </Link>
 
         <div className="patient-detail-error">
+
           <h1>
             Ficha del paciente
           </h1>
@@ -156,6 +163,7 @@ export default function PacienteDetallePage() {
           <p>
             {error}
           </p>
+
         </div>
 
       </main>
@@ -213,6 +221,7 @@ export default function PacienteDetallePage() {
           </div>
 
           <div>
+
             <p className="patient-detail-eyebrow">
               Ficha del paciente
             </p>
@@ -239,6 +248,7 @@ export default function PacienteDetallePage() {
             </div>
 
             <p className="patient-detail-summary">
+
               {edad !== null
                 ? `${edad} años`
                 : 'Edad no registrada'}
@@ -248,7 +258,9 @@ export default function PacienteDetallePage() {
               {paciente.documento
                 ? `Documento ${paciente.documento}`
                 : 'Sin documento'}
+
             </p>
+
           </div>
 
         </div>
@@ -260,6 +272,7 @@ export default function PacienteDetallePage() {
       <section className="patient-detail-summary-grid">
 
         <div className="patient-detail-summary-card">
+
           <span>
             Fecha de nacimiento
           </span>
@@ -269,9 +282,11 @@ export default function PacienteDetallePage() {
               paciente.fechaNacimiento
             )}
           </strong>
+
         </div>
 
         <div className="patient-detail-summary-card">
+
           <span>
             Edad
           </span>
@@ -281,9 +296,11 @@ export default function PacienteDetallePage() {
               ? `${edad} años`
               : 'Sin fecha'}
           </strong>
+
         </div>
 
         <div className="patient-detail-summary-card">
+
           <span>
             Fecha de ingreso
           </span>
@@ -293,6 +310,7 @@ export default function PacienteDetallePage() {
               paciente.fechaIngreso
             )}
           </strong>
+
         </div>
 
       </section>
@@ -302,7 +320,9 @@ export default function PacienteDetallePage() {
       <section className="patient-detail-card">
 
         <div className="patient-detail-section-header">
+
           <div>
+
             <p className="patient-detail-section-eyebrow">
               Información general
             </p>
@@ -310,12 +330,15 @@ export default function PacienteDetallePage() {
             <h2>
               Datos personales
             </h2>
+
           </div>
+
         </div>
 
         <div className="patient-detail-data-grid">
 
           <div className="patient-detail-data-item">
+
             <span>
               Nombre
             </span>
@@ -323,9 +346,11 @@ export default function PacienteDetallePage() {
             <strong>
               {paciente.nombre}
             </strong>
+
           </div>
 
           <div className="patient-detail-data-item">
+
             <span>
               Apellido
             </span>
@@ -333,9 +358,11 @@ export default function PacienteDetallePage() {
             <strong>
               {paciente.apellido}
             </strong>
+
           </div>
 
           <div className="patient-detail-data-item">
+
             <span>
               Documento
             </span>
@@ -344,9 +371,11 @@ export default function PacienteDetallePage() {
               {paciente.documento ||
                 'Sin documento'}
             </strong>
+
           </div>
 
           <div className="patient-detail-data-item">
+
             <span>
               Nacimiento
             </span>
@@ -356,9 +385,11 @@ export default function PacienteDetallePage() {
                 paciente.fechaNacimiento
               )}
             </strong>
+
           </div>
 
           <div className="patient-detail-data-item">
+
             <span>
               Edad
             </span>
@@ -368,9 +399,11 @@ export default function PacienteDetallePage() {
                 ? `${edad} años`
                 : 'Sin fecha'}
             </strong>
+
           </div>
 
           <div className="patient-detail-data-item">
+
             <span>
               Ingreso
             </span>
@@ -380,6 +413,7 @@ export default function PacienteDetallePage() {
                 paciente.fechaIngreso
               )}
             </strong>
+
           </div>
 
         </div>
@@ -391,7 +425,9 @@ export default function PacienteDetallePage() {
       <section className="patient-detail-card">
 
         <div className="patient-detail-section-header">
+
           <div>
+
             <p className="patient-detail-section-eyebrow">
               Historia clínica
             </p>
@@ -399,125 +435,187 @@ export default function PacienteDetallePage() {
             <h2>
               Información clínica
             </h2>
+
           </div>
+
+          {!editandoClinica && (
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={() =>
+                setEditandoClinica(
+                  true
+                )
+              }
+            >
+              Editar información clínica
+            </button>
+          )}
+
         </div>
 
-        <div className="patient-clinical-grid">
+        {editandoClinica ? (
 
-          <div className="patient-clinical-item">
-            <span>
-              Enfermedades
-            </span>
+          <EditarInformacionClinicaForm
+            paciente={paciente}
+            onUpdated={(
+              pacienteActualizado
+            ) => {
+              setPaciente(
+                pacienteActualizado
+              )
 
-            <p>
-              {mostrarLista(
-                paciente.enfermedades,
-                'Ninguna registrada'
-              )}
-            </p>
+              setEditandoClinica(
+                false
+              )
+            }}
+            onCancel={() =>
+              setEditandoClinica(
+                false
+              )
+            }
+          />
+
+        ) : (
+
+          <div className="patient-clinical-grid">
+
+            <div className="patient-clinical-item">
+
+              <span>
+                Enfermedades
+              </span>
+
+              <p>
+                {mostrarLista(
+                  paciente.enfermedades,
+                  'Ninguna registrada'
+                )}
+              </p>
+
+            </div>
+
+            <div className="patient-clinical-item">
+
+              <span>
+                Alergias
+              </span>
+
+              <p>
+                {mostrarLista(
+                  paciente.alergias,
+                  'Ninguna registrada'
+                )}
+              </p>
+
+            </div>
+
+            <div className="patient-clinical-item">
+
+              <span>
+                Medicamentos
+              </span>
+
+              <p>
+                {mostrarLista(
+                  paciente.medicamentos,
+                  'Ninguno registrado'
+                )}
+              </p>
+
+            </div>
+
+            <div className="patient-clinical-item">
+
+              <span>
+                Antecedentes
+              </span>
+
+              <p>
+                {paciente.antecedentes ||
+                  'Sin antecedentes registrados'}
+              </p>
+
+            </div>
+
+            <div className="patient-clinical-item full">
+
+              <span>
+                Información importante
+              </span>
+
+              <p>
+                {paciente.informacionImportante ||
+                  'Sin información registrada'}
+              </p>
+
+            </div>
+
+            <div className="patient-clinical-item full">
+
+              <span>
+                Observaciones generales
+              </span>
+
+              <p>
+                {paciente.observacionesGenerales ||
+                  'Sin observaciones'}
+              </p>
+
+            </div>
+
           </div>
 
-          <div className="patient-clinical-item">
-            <span>
-              Alergias
-            </span>
-
-            <p>
-              {mostrarLista(
-                paciente.alergias,
-                'Ninguna registrada'
-              )}
-            </p>
-          </div>
-
-          <div className="patient-clinical-item">
-            <span>
-              Medicamentos
-            </span>
-
-            <p>
-              {mostrarLista(
-                paciente.medicamentos,
-                'Ninguno registrado'
-              )}
-            </p>
-          </div>
-
-          <div className="patient-clinical-item">
-            <span>
-              Antecedentes
-            </span>
-
-            <p>
-              {paciente.antecedentes ||
-                'Sin antecedentes registrados'}
-            </p>
-          </div>
-
-          <div className="patient-clinical-item full">
-            <span>
-              Información importante
-            </span>
-
-            <p>
-              {paciente.informacionImportante ||
-                'Sin información registrada'}
-            </p>
-          </div>
-
-          <div className="patient-clinical-item full">
-            <span>
-              Observaciones generales
-            </span>
-
-            <p>
-              {paciente.observacionesGenerales ||
-                'Sin observaciones'}
-            </p>
-          </div>
-
-        </div>
+        )}
 
       </section>
 
       {/* RESPONSABLES */}
 
       <section className="patient-detail-module">
+
         <ResponsablesPaciente
           pacienteId={
             paciente._id
           }
         />
+
       </section>
 
       {/* NOTAS */}
 
       <section className="patient-detail-module">
+
         <NotasPaciente
           pacienteId={
             paciente._id
           }
         />
+
       </section>
 
       {/* PLANES */}
 
       <section className="patient-detail-module">
+
         <PlanesTrabajoPaciente
           pacienteId={
             paciente._id
           }
         />
+
       </section>
 
       {/* SESIONES */}
 
       <section className="patient-detail-module patient-detail-sessions">
+
         <SesionesPaciente
           pacienteId={
             paciente._id
           }
         />
+
       </section>
 
     </main>

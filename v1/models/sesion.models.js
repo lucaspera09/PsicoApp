@@ -62,6 +62,21 @@ sesionSchema.index({
   fecha: -1
 })
 
+sesionSchema.index(
+  {
+    paciente: 1,
+    turno: 1
+  },
+  {
+    unique: true,
+    partialFilterExpression: {
+      turno: {
+        $type: 'objectId'
+      }
+    }
+  }
+)
+
 const Sesion = mongoose.model(
   'Sesion',
   sesionSchema

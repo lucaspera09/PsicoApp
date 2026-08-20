@@ -48,6 +48,10 @@ export default function AgendaPage() {
     setCambiandoEstadoId
   ] = useState(null)
 
+  /*
+    CARGAR AGENDA
+  */
+
   useEffect(() => {
     const cargarAgenda = async () => {
       try {
@@ -99,6 +103,10 @@ export default function AgendaPage() {
     cargarAgenda()
   }, [])
 
+  /*
+    ORDENAR TURNOS
+  */
+
   const turnosOrdenados = useMemo(() => {
     return [...turnos].sort(
       (a, b) =>
@@ -106,6 +114,10 @@ export default function AgendaPage() {
         new Date(b.fechaInicio)
     )
   }, [turnos])
+
+  /*
+    CREAR TURNO
+  */
 
   const handleTurnoCreado = (
     nuevoTurno
@@ -121,6 +133,11 @@ export default function AgendaPage() {
   const handleCancelarCreacion = () => {
     setMostrarFormulario(false)
   }
+
+  /*
+    CONVERTIR HORARIO FIJO
+    EN TURNO REAL
+  */
 
   const asegurarTurnoReal = async (
     turno
@@ -162,8 +179,10 @@ export default function AgendaPage() {
 
     const datos = {
       participantes,
+
       fechaInicio:
         turno.fechaInicio,
+
       fechaFin:
         turno.fechaFin
     }
@@ -190,6 +209,10 @@ export default function AgendaPage() {
     return turnoReal
   }
 
+  /*
+    SELECCIONAR TURNO
+  */
+
   const handleSeleccionarTurno = (
     turno
   ) => {
@@ -201,6 +224,10 @@ export default function AgendaPage() {
     setTurnoEditando(null)
     setTurnoRegistrandoSesion(null)
   }
+
+  /*
+    EDITAR TURNO
+  */
 
   const handleEditarTurno = async (
     turno
@@ -254,6 +281,18 @@ export default function AgendaPage() {
     setTurnoEditando(null)
   }
 
+  /*
+    ABRIR REGISTRO DE SESIÓN
+
+    Seguimos recibiendo el participante
+    que el usuario tocó.
+
+    Ese paciente queda seleccionado
+    inicialmente dentro del formulario,
+    pero después se pueden seleccionar
+    los demás pacientes del mismo turno.
+  */
+
   const handleRegistrarSesion = async (
     turno,
     participante
@@ -284,6 +323,16 @@ export default function AgendaPage() {
         )
       }
 
+      /*
+        paciente se mantiene por
+        compatibilidad.
+
+        RegistrarSesionTurnoForm
+        también recibe participantes,
+        por lo que puede seleccionar
+        varios niños.
+      */
+
       const turnoParaSesion = {
         ...turnoReal,
 
@@ -312,75 +361,181 @@ export default function AgendaPage() {
     }
   }
 
-  const handleSesionCreada = async () => {
-    const turno =
-      turnoRegistrandoSesion
+  /*
+    SESIONES CREADAS
 
-    if (!turno) {
-      setTurnoRegistrandoSesion(
-        null
-      )
+    Ahora RegistrarSesionTurnoForm
+    devuelve:
 
-      return
-    }
+    nuevasSesiones
+    pacientesSeleccionados
 
-    try {
-      const pacienteId =
-        turno.paciente?._id ||
-        turno.paciente
+    Ejemplo:
+    pacientesSeleccionados = [
+      idMateo,
+      idJuan
+    ]
 
-      const participante =
-        turno.participantes?.find(
-          (item) =>
-            (
-              item.paciente?._id ||
-              item.paciente
-            )?.toString() ===
-            pacienteId?.toString()
-        )
+    Marcamos a ambos como realizados.
+  */
 
-      if (
-        participante &&
-        participante.estado !==
-          'realizado'
-      ) {
-        const response =
-          await api.patch(
-            `/turnos/${turno._id}/status`,
-            {
-              pacienteId,
-              estado: 'realizado'
-            }
-          )
+  const handleSesionCreada = async (
+  nuevasSesiones,
+  pacientesSeleccionados
+) => {
+  const turno =
+    turnoRegistrandoSesion
 
-        const turnoActualizado =
-          response.data?.data ||
-          response.data
+  if (!turno) {
+    return
+  }
 
-        setTurnos((prev) =>
-          prev.map((item) =>
-            item._id ===
-            turno._id
-              ? turnoActualizado
-              : item
-          )
-        )
-      }
-    } catch (error) {
-      console.error(
-        'La sesión se guardó, pero no se pudo marcar al paciente como realizado:',
-        error
-      )
+  let pacientesIds =
+    Array.isArray(
+      pacientesSeleccionados
+    )
+      ? pacientesSeleccionados
+      : []
 
-      alert(
-        'La sesión se guardó, pero no se pudo actualizar el estado del paciente.'
-      )
-    } finally {
-      setTurnoRegistrandoSesion(
-        null
-      )
+  /*
+    Compatibilidad con el flujo
+    de un solo paciente.
+  */
+  if (
+    pacientesIds.length === 0 &&
+    turno.paciente
+  ) {
+    const pacienteId =
+      turno.paciente?._id ||
+      turno.paciente
+
+    if (pacienteId) {
+      pacientesIds = [
+        pacienteId
+      ]
     }
   }
+
+  /*
+    Si no se creó ninguna sesión,
+    no hacemos cambios en el turno.
+  */
+  if (
+    pacientesIds.length === 0
+  ) {
+    return
+  }
+
+  try {
+    let turnoActualizado =
+      turno
+
+    /*
+      Marcamos como realizado
+      solamente a los pacientes
+      cuyas sesiones se crearon.
+    */
+    for (
+      const pacienteId
+      of pacientesIds
+    ) {
+      const participante =
+        turnoActualizado
+          .participantes
+          ?.find(
+            (item) =>
+              (
+                item.paciente?._id ||
+                item.paciente
+              )?.toString() ===
+              pacienteId?.toString()
+          )
+
+      if (
+        participante?.estado ===
+        'realizado'
+      ) {
+        continue
+      }
+
+      const response =
+        await api.patch(
+          `/turnos/${turno._id}/status`,
+          {
+            pacienteId,
+            estado: 'realizado'
+          }
+        )
+
+      turnoActualizado =
+        response.data?.data ||
+        response.data
+    }
+
+    /*
+      Actualizamos el turno en
+      la lista general de Agenda.
+    */
+    setTurnos((prev) =>
+      prev.map((item) =>
+        item._id ===
+        turno._id
+          ? turnoActualizado
+          : item
+      )
+    )
+
+    /*
+      También actualizamos la copia
+      que tiene abierto el formulario.
+
+      Importante:
+      NO cerramos el modal acá.
+      RegistrarSesionTurnoForm decide
+      cuándo cerrarlo.
+    */
+    setTurnoRegistrandoSesion(
+      (prev) => {
+        if (!prev) {
+          return prev
+        }
+
+        return {
+          ...prev,
+          ...turnoActualizado,
+
+          /*
+            Conservamos el paciente
+            desde el cual se abrió
+            originalmente el formulario.
+          */
+          paciente:
+            prev.paciente
+        }
+      }
+    )
+
+    return turnoActualizado
+
+  } catch (error) {
+    console.error(
+      'Las sesiones se guardaron, pero no se pudieron actualizar todos los estados:',
+      error
+    )
+
+    alert(
+      'Las sesiones se guardaron, pero hubo un problema al actualizar el estado de alguno de los pacientes.'
+    )
+
+    /*
+      Lanzamos el error nuevamente
+      para que RegistrarSesionTurnoForm
+      sepa que el proceso no terminó
+      correctamente.
+    */
+    throw error
+  }
+}
 
   const handleCancelarSesion = () => {
     setTurnoRegistrandoSesion(
@@ -388,16 +543,27 @@ export default function AgendaPage() {
     )
   }
 
+  /*
+    CAMBIAR ESTADO MANUALMENTE
+  */
+
   const handleCambiarEstado = async (
     turno,
     participante,
     nuevoEstado
   ) => {
     const nombresEstados = {
-      programado: 'Programado',
-      realizado: 'Realizado',
-      cancelado: 'Cancelado',
-      no_asistio: 'No asistió'
+      programado:
+        'Programado',
+
+      realizado:
+        'Realizado',
+
+      cancelado:
+        'Cancelado',
+
+      no_asistio:
+        'No asistió'
     }
 
     const paciente =
@@ -437,6 +603,7 @@ export default function AgendaPage() {
           `/turnos/${turnoReal._id}/status`,
           {
             pacienteId,
+
             estado:
               nuevoEstado
           }
@@ -475,6 +642,10 @@ export default function AgendaPage() {
       )
     }
   }
+
+  /*
+    FORMATOS
+  */
 
   const mostrarEstado = (
     estado
@@ -530,10 +701,17 @@ export default function AgendaPage() {
       ).toLocaleDateString(
         'es-UY',
         {
-          weekday: 'long',
-          day: '2-digit',
-          month: 'long',
-          year: 'numeric'
+          weekday:
+            'long',
+
+          day:
+            '2-digit',
+
+          month:
+            'long',
+
+          year:
+            'numeric'
         }
       )
 
@@ -542,6 +720,10 @@ export default function AgendaPage() {
       texto.slice(1)
     )
   }
+
+  /*
+    CAMBIAR VISTA
+  */
 
   const cambiarVista = (
     nuevaVista
@@ -554,9 +736,14 @@ export default function AgendaPage() {
     setTurnoRegistrandoSesion(null)
   }
 
+  /*
+    LOADING
+  */
+
   if (loading) {
     return (
       <main className="agenda-page">
+
         <h1>
           Agenda
         </h1>
@@ -564,13 +751,19 @@ export default function AgendaPage() {
         <p>
           Cargando agenda...
         </p>
+
       </main>
     )
   }
 
+  /*
+    ERROR
+  */
+
   if (error) {
     return (
       <main className="agenda-page">
+
         <h1>
           Agenda
         </h1>
@@ -578,6 +771,7 @@ export default function AgendaPage() {
         <p>
           {error}
         </p>
+
       </main>
     )
   }
@@ -588,7 +782,9 @@ export default function AgendaPage() {
       {/* HEADER */}
 
       <div className="agenda-header">
+
         <div>
+
           <h1>
             Agenda
           </h1>
@@ -597,11 +793,13 @@ export default function AgendaPage() {
             Gestioná tus turnos,
             pacientes y sesiones.
           </p>
+
         </div>
 
         {!mostrarFormulario &&
           !turnoEditando &&
           !turnoRegistrandoSesion && (
+
             <button
               type="button"
               className="agenda-new-button"
@@ -617,7 +815,9 @@ export default function AgendaPage() {
             >
               + Nuevo turno
             </button>
+
           )}
+
       </div>
 
       {/* VISTAS */}
@@ -678,6 +878,7 @@ export default function AgendaPage() {
 
       {mostrarFormulario && (
         <div className="card">
+
           <CrearTurnoForm
             onCreated={
               handleTurnoCreado
@@ -686,6 +887,7 @@ export default function AgendaPage() {
               handleCancelarCreacion
             }
           />
+
         </div>
       )}
 
@@ -693,6 +895,7 @@ export default function AgendaPage() {
 
       {turnoEditando && (
         <div className="card">
+
           <EditarTurnoForm
             turno={
               turnoEditando
@@ -704,25 +907,30 @@ export default function AgendaPage() {
               handleCancelarEdicion
             }
           />
+
         </div>
       )}
 
       {/* REGISTRAR SESIÓN */}
 
       {turnoRegistrandoSesion && (
+
         <div
           className="agenda-modal-backdrop"
           onClick={
             handleCancelarSesion
           }
         >
+
           <div
             className="agenda-modal"
             onClick={(event) =>
               event.stopPropagation()
             }
           >
+
             <div className="agenda-modal-header">
+
               <h2>
                 Registrar sesión
               </h2>
@@ -736,6 +944,7 @@ export default function AgendaPage() {
               >
                 ×
               </button>
+
             </div>
 
             <RegistrarSesionTurnoForm
@@ -749,7 +958,9 @@ export default function AgendaPage() {
                 handleCancelarSesion
               }
             />
+
           </div>
+
         </div>
       )}
 
@@ -760,6 +971,7 @@ export default function AgendaPage() {
         {/* HOY */}
 
         {vista === 'hoy' && (
+
           <AgendaHoyGrid
             turnos={
               turnosOrdenados
@@ -771,11 +983,13 @@ export default function AgendaPage() {
               handleSeleccionarTurno
             }
           />
+
         )}
 
         {/* SEMANA */}
 
         {vista === 'semana' && (
+
           <AgendaSemanalGrid
             turnos={
               turnosOrdenados
@@ -787,11 +1001,13 @@ export default function AgendaPage() {
               handleSeleccionarTurno
             }
           />
+
         )}
 
         {/* MES */}
 
         {vista === 'mes' && (
+
           <AgendaMensualGrid
             turnos={
               turnosOrdenados
@@ -803,6 +1019,7 @@ export default function AgendaPage() {
               handleSeleccionarTurno
             }
           />
+
         )}
 
       </section>
@@ -810,6 +1027,7 @@ export default function AgendaPage() {
       {/* MODAL DETALLE TURNO */}
 
       {turnoSeleccionado && (
+
         <div
           className="agenda-modal-backdrop"
           onClick={() =>
@@ -818,6 +1036,7 @@ export default function AgendaPage() {
             )
           }
         >
+
           <section
             className="agenda-modal"
             onClick={(event) =>
@@ -825,21 +1044,25 @@ export default function AgendaPage() {
             }
           >
 
-            {/* CABECERA MODAL */}
+            {/* CABECERA */}
 
             <div className="agenda-modal-header">
 
               <div>
+
                 <h2>
                   Detalle del turno
                 </h2>
 
                 {turnoSeleccionado
                   .esHorarioFijo && (
+
                   <small>
                     Horario fijo semanal
                   </small>
+
                 )}
+
               </div>
 
               <button
@@ -861,24 +1084,30 @@ export default function AgendaPage() {
             <div className="agenda-turn-info">
 
               <div className="agenda-info-box">
+
                 <span className="agenda-info-label">
                   Fecha
                 </span>
 
                 <span className="agenda-info-value">
+
                   {mostrarFecha(
                     turnoSeleccionado
                       .fechaInicio
                   )}
+
                 </span>
+
               </div>
 
               <div className="agenda-info-box">
+
                 <span className="agenda-info-label">
                   Horario
                 </span>
 
                 <span className="agenda-info-value">
+
                   {mostrarHora(
                     turnoSeleccionado
                       .fechaInicio
@@ -890,7 +1119,9 @@ export default function AgendaPage() {
                     turnoSeleccionado
                       .fechaFin
                   )}
+
                 </span>
+
               </div>
 
             </div>
@@ -899,6 +1130,7 @@ export default function AgendaPage() {
 
             {turnoSeleccionado
               .observacion && (
+
               <div
                 className="agenda-info-box"
                 style={{
@@ -906,17 +1138,22 @@ export default function AgendaPage() {
                     '20px'
                 }}
               >
+
                 <span className="agenda-info-label">
                   Observación
                 </span>
 
                 <span className="agenda-info-value">
+
                   {
                     turnoSeleccionado
                       .observacion
                   }
+
                 </span>
+
               </div>
+
             )}
 
             {/* PACIENTES */}
@@ -960,6 +1197,7 @@ export default function AgendaPage() {
                       <div className="agenda-patient-top">
 
                         <div className="agenda-patient-name">
+
                           {
                             paciente
                               ?.nombre
@@ -969,6 +1207,7 @@ export default function AgendaPage() {
                             paciente
                               ?.apellido
                           }
+
                         </div>
 
                         <span
@@ -1004,6 +1243,7 @@ export default function AgendaPage() {
 
                         {participante.estado !==
                           'realizado' && (
+
                           <button
                             type="button"
                             className="agenda-action-button agenda-action-success"
@@ -1021,10 +1261,12 @@ export default function AgendaPage() {
                           >
                             ✓ Realizado
                           </button>
+
                         )}
 
                         {participante.estado !==
                           'no_asistio' && (
+
                           <button
                             type="button"
                             className="agenda-action-button"
@@ -1042,10 +1284,12 @@ export default function AgendaPage() {
                           >
                             No asistió
                           </button>
+
                         )}
 
                         {participante.estado !==
                           'cancelado' && (
+
                           <button
                             type="button"
                             className="agenda-action-button agenda-action-danger"
@@ -1063,10 +1307,12 @@ export default function AgendaPage() {
                           >
                             Cancelar
                           </button>
+
                         )}
 
                         {participante.estado !==
                           'programado' && (
+
                           <button
                             type="button"
                             className="agenda-action-button"
@@ -1084,6 +1330,7 @@ export default function AgendaPage() {
                           >
                             Volver a programado
                           </button>
+
                         )}
 
                       </div>
@@ -1126,7 +1373,9 @@ export default function AgendaPage() {
             </div>
 
           </section>
+
         </div>
+
       )}
 
     </main>

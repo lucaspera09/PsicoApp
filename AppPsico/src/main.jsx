@@ -18,6 +18,7 @@ import './styles/plans.css'
 import './styles/weeklySchedules.css'
 import './styles/professionals.css'
 import './styles/adminDashboard.css'
+import './styles/quickNote.css'
 
 import App from './App.jsx'
 import { store } from './store/store.js'

@@ -17,6 +17,7 @@ import PacienteDetallePage from './pages/PacienteDetallePage.jsx'
 import AgendaPage from './pages/AgendaPage.jsx'
 import ProfesionalesPage from './pages/ProfesionalesPage.jsx'
 import HorariosSemanalesPage from './pages/HorariosSemanalesPage.jsx'
+import NotaRapidaPage from './pages/NotaRapidaPage.jsx'
 
 import {
   loadCurrentUser
@@ -125,7 +126,12 @@ function App() {
                 <PacientesPage />
               }
             />
-
+            <Route
+  path="/nota-rapida"
+  element={
+    <NotaRapidaPage />
+  }
+/>
             <Route
               path="/pacientes/:id"
               element={

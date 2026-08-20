@@ -2391,3 +2391,275 @@
 
   color: var(--color-warning);
 }
+/* =========================
+   SESIÓN MULTI-PACIENTE
+========================= */
+
+.turn-session-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 12px;
+
+  padding: 13px 14px;
+
+  margin-bottom: 16px;
+
+  border-radius: 13px;
+
+  background:
+    var(--color-primary-soft);
+}
+
+.turn-session-group-eyebrow {
+  display: block;
+
+  margin-bottom: 3px;
+
+  color:
+    var(--color-primary);
+
+  font-size: 9px;
+  font-weight: 850;
+
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.turn-session-group-header h3 {
+  margin: 0 0 3px;
+
+  font-size: 17px;
+}
+
+.turn-session-group-header p {
+  margin: 0;
+
+  color:
+    var(--color-text-soft);
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.turn-session-group-count {
+  flex-shrink: 0;
+
+  padding: 5px 9px;
+
+  border-radius: 999px;
+
+  background: white;
+
+  color:
+    var(--color-primary);
+
+  font-size: 9px;
+  font-weight: 850;
+}
+
+
+/* PACIENTES */
+
+.turn-session-patient-tools {
+  display: flex;
+  justify-content: flex-end;
+
+  margin-bottom: 9px;
+}
+
+.turn-session-small-action {
+  padding: 5px 9px;
+
+  border:
+    1px solid
+    var(--color-primary);
+
+  border-radius: 8px;
+
+  background: transparent;
+
+  color:
+    var(--color-primary);
+
+  font-size: 9px;
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+.turn-session-patient-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 8px;
+}
+
+.turn-session-patient-option {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+
+  min-height: 58px;
+
+  padding: 9px;
+
+  text-align: left;
+
+  border:
+    1px solid
+    var(--color-border);
+
+  border-radius: 11px;
+
+  background: white;
+
+  cursor: pointer;
+
+  transition:
+    border-color 0.15s,
+    background 0.15s,
+    transform 0.15s;
+}
+
+.turn-session-patient-option:hover {
+  transform:
+    translateY(-1px);
+
+  border-color:
+    var(--color-primary);
+}
+
+.turn-session-patient-option.selected {
+  border-color:
+    var(--color-primary);
+
+  background:
+    var(--color-primary-soft);
+}
+
+.turn-session-patient-option-avatar {
+  width: 35px;
+  height: 35px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 10px;
+
+  background:
+    var(--color-surface-soft);
+
+  color:
+    var(--color-primary);
+
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.turn-session-patient-option.selected
+.turn-session-patient-option-avatar {
+  background: white;
+}
+
+.turn-session-patient-option-info {
+  flex: 1;
+
+  min-width: 0;
+}
+
+.turn-session-patient-option-info strong {
+  display: block;
+
+  overflow: hidden;
+
+  margin-bottom: 2px;
+
+  color:
+    var(--color-text);
+
+  font-size: 10px;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.turn-session-patient-option-info small {
+  display: block;
+
+  color:
+    var(--color-text-soft);
+
+  font-size: 8px;
+}
+
+.turn-session-patient-option-check {
+  width: 23px;
+  height: 23px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border:
+    1px solid
+    var(--color-border);
+
+  border-radius: 7px;
+
+  background: white;
+
+  color: white;
+
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.turn-session-patient-option.selected
+.turn-session-patient-option-check {
+  border-color:
+    var(--color-primary);
+
+  background:
+    var(--color-primary);
+}
+
+.turn-session-shared-note {
+  display: block;
+
+  margin-top: 6px;
+
+  color:
+    var(--color-text-soft);
+
+  font-size: 9px;
+  line-height: 1.4;
+}
+
+
+/* MOBILE */
+
+@media (max-width: 768px) {
+  .turn-session-patient-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .turn-session-patient-option {
+    min-height: 62px;
+  }
+
+  .turn-session-group-header {
+    align-items: flex-start;
+  }
+}
