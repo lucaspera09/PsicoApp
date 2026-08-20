@@ -7,9 +7,20 @@ import EditarResponsableForm from './EditarResponsableForm.jsx'
 export default function ResponsablesPaciente({
   pacienteId
 }) {
-  const [responsables, setResponsables] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const [
+    responsables,
+    setResponsables
+  ] = useState([])
+
+  const [
+    loading,
+    setLoading
+  ] = useState(true)
+
+  const [
+    error,
+    setError
+  ] = useState(null)
 
   const [
     mostrarFormulario,
@@ -27,15 +38,19 @@ export default function ResponsablesPaciente({
         setLoading(true)
         setError(null)
 
-        const response = await api.get(
-          `/responsables/paciente/${pacienteId}`
-        )
+        const response =
+          await api.get(
+            `/responsables/paciente/${pacienteId}`
+          )
 
         const responsablesRecibidos =
-          response.data?.data || response.data
+          response.data?.data ||
+          response.data
 
         setResponsables(
-          Array.isArray(responsablesRecibidos)
+          Array.isArray(
+            responsablesRecibidos
+          )
             ? responsablesRecibidos
             : []
         )
@@ -62,10 +77,12 @@ export default function ResponsablesPaciente({
   const handleResponsableCreado = (
     nuevoResponsable
   ) => {
-    setResponsables((prev) => [
-      nuevoResponsable,
-      ...prev
-    ])
+    setResponsables(
+      (prev) => [
+        nuevoResponsable,
+        ...prev
+      ]
+    )
 
     setMostrarFormulario(false)
   }
@@ -78,19 +95,23 @@ export default function ResponsablesPaciente({
     responsable
   ) => {
     setMostrarFormulario(false)
-    setResponsableEditando(responsable)
+    setResponsableEditando(
+      responsable
+    )
   }
 
   const handleResponsableActualizado = (
     responsableActualizado
   ) => {
-    setResponsables((prev) =>
-      prev.map((responsable) =>
-        responsable._id ===
-        responsableActualizado._id
-          ? responsableActualizado
-          : responsable
-      )
+    setResponsables(
+      (prev) =>
+        prev.map(
+          (responsable) =>
+            responsable._id ===
+            responsableActualizado._id
+              ? responsableActualizado
+              : responsable
+        )
     )
 
     setResponsableEditando(null)
@@ -100,199 +121,338 @@ export default function ResponsablesPaciente({
     setResponsableEditando(null)
   }
 
-  const handleEliminarResponsable = async (
+  const handleEliminarResponsable =
+    async (responsable) => {
+      const confirmado =
+        window.confirm(
+          `¿Querés eliminar a ${responsable.nombre} ${responsable.apellido}?`
+        )
+
+      if (!confirmado) {
+        return
+      }
+
+      try {
+        await api.delete(
+          `/responsables/${responsable._id}`
+        )
+
+        setResponsables(
+          (prev) =>
+            prev.filter(
+              (item) =>
+                item._id !==
+                responsable._id
+            )
+        )
+
+        if (
+          responsableEditando?._id ===
+          responsable._id
+        ) {
+          setResponsableEditando(
+            null
+          )
+        }
+      } catch (error) {
+        console.error(
+          'Error al eliminar responsable:',
+          error
+        )
+
+        alert(
+          error.response?.data?.message ||
+          'No se pudo eliminar el responsable'
+        )
+      }
+    }
+
+  const obtenerIniciales = (
     responsable
   ) => {
-    const confirmado = window.confirm(
-      `¿Querés eliminar a ${responsable.nombre} ${responsable.apellido}?`
-    )
+    const nombre =
+      responsable.nombre
+        ?.charAt(0)
+        ?.toUpperCase() ||
+      ''
 
-    if (!confirmado) {
-      return
-    }
+    const apellido =
+      responsable.apellido
+        ?.charAt(0)
+        ?.toUpperCase() ||
+      ''
 
-    try {
-      await api.delete(
-        `/responsables/${responsable._id}`
-      )
-
-      setResponsables((prev) =>
-        prev.filter(
-          (item) =>
-            item._id !== responsable._id
-        )
-      )
-
-      if (
-        responsableEditando?._id ===
-        responsable._id
-      ) {
-        setResponsableEditando(null)
-      }
-    } catch (error) {
-      console.error(
-        'Error al eliminar responsable:',
-        error
-      )
-
-      alert(
-        error.response?.data?.message ||
-        'No se pudo eliminar el responsable'
-      )
-    }
+    return `${nombre}${apellido}`
   }
 
   if (loading) {
     return (
-      <section>
-        <h2>Responsables</h2>
+      <section className="responsibles-section">
+        <h2>
+          Responsables
+        </h2>
 
-        <p>Cargando responsables...</p>
+        <p>
+          Cargando responsables...
+        </p>
       </section>
     )
   }
 
   if (error) {
     return (
-      <section>
-        <h2>Responsables</h2>
+      <section className="responsibles-section">
+        <h2>
+          Responsables
+        </h2>
 
-        <p>{error}</p>
+        <p>
+          {error}
+        </p>
       </section>
     )
   }
 
   return (
-    <section>
-      <h2>Responsables</h2>
+    <section className="responsibles-section">
 
-      {!mostrarFormulario &&
-        !responsableEditando && (
-          <button
-            type="button"
-            onClick={() =>
-              setMostrarFormulario(true)
-            }
-          >
-            + Nuevo responsable
-          </button>
-        )}
+      {/* HEADER */}
+
+      <div className="responsibles-header">
+
+        <div>
+          <p className="responsibles-eyebrow">
+            Contactos
+          </p>
+
+          <h2>
+            Responsables
+          </h2>
+
+          <p>
+            Familiares o referentes
+            vinculados al paciente.
+          </p>
+        </div>
+
+        {!mostrarFormulario &&
+          !responsableEditando && (
+            <button
+              type="button"
+              className="responsibles-new-button"
+              onClick={() =>
+                setMostrarFormulario(
+                  true
+                )
+              }
+            >
+              + Nuevo responsable
+            </button>
+          )}
+
+      </div>
+
+      {/* CREAR */}
 
       {mostrarFormulario && (
-        <CrearResponsableForm
-          pacienteId={pacienteId}
-          onCreated={handleResponsableCreado}
-          onCancel={handleCancelar}
-        />
-      )}
+        <div className="responsibles-form-wrapper">
 
-      {responsableEditando && (
-        <EditarResponsableForm
-          responsable={responsableEditando}
-          onUpdated={
-            handleResponsableActualizado
-          }
-          onCancel={
-            handleCancelarEdicion
-          }
-        />
-      )}
+          <CrearResponsableForm
+            pacienteId={
+              pacienteId
+            }
+            onCreated={
+              handleResponsableCreado
+            }
+            onCancel={
+              handleCancelar
+            }
+          />
 
-      {responsables.length === 0 ? (
-        <p>
-          No hay responsables registrados.
-        </p>
-      ) : (
-        <div>
-          {responsables.map((responsable) => (
-            <article key={responsable._id}>
-
-              <h3>
-                {responsable.nombre}{' '}
-                {responsable.apellido}
-              </h3>
-
-              <p>
-                <strong>
-                  Relación:
-                </strong>{' '}
-                {responsable.relacion ||
-                  'Sin especificar'}
-              </p>
-
-              <p>
-                <strong>
-                  Teléfono:
-                </strong>{' '}
-                {responsable.telefono ||
-                  'Sin teléfono'}
-              </p>
-
-              <p>
-                <strong>
-                  Email:
-                </strong>{' '}
-                {responsable.email ||
-                  'Sin email'}
-              </p>
-
-              <p>
-                <strong>
-                  Responsable principal:
-                </strong>{' '}
-                {responsable.principal
-                  ? 'Sí'
-                  : 'No'}
-              </p>
-
-              <p>
-                <strong>
-                  Contacto de emergencia:
-                </strong>{' '}
-                {responsable.contactoEmergencia
-                  ? 'Sí'
-                  : 'No'}
-              </p>
-
-              {responsable.observaciones && (
-                <p>
-                  <strong>
-                    Observaciones:
-                  </strong>{' '}
-                  {responsable.observaciones}
-                </p>
-              )}
-
-              <div>
-                <button
-                  type="button"
-                  onClick={() =>
-                    handleEditarResponsable(
-                      responsable
-                    )
-                  }
-                >
-                  Editar
-                </button>
-
-                {' '}
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    handleEliminarResponsable(
-                      responsable
-                    )
-                  }
-                >
-                  Eliminar
-                </button>
-              </div>
-
-            </article>
-          ))}
         </div>
       )}
+
+      {/* EDITAR */}
+
+      {responsableEditando && (
+        <div className="responsibles-form-wrapper">
+
+          <EditarResponsableForm
+            responsable={
+              responsableEditando
+            }
+            onUpdated={
+              handleResponsableActualizado
+            }
+            onCancel={
+              handleCancelarEdicion
+            }
+          />
+
+        </div>
+      )}
+
+      {/* VACÍO */}
+
+      {responsables.length === 0 ? (
+        <div className="responsibles-empty">
+
+          <div className="responsibles-empty-icon">
+            ♡
+          </div>
+
+          <h3>
+            Sin responsables registrados
+          </h3>
+
+          <p>
+            Agregá un familiar,
+            tutor o contacto de referencia.
+          </p>
+
+        </div>
+      ) : (
+        <div className="responsibles-grid">
+
+          {responsables.map(
+            (responsable) => (
+              <article
+                key={
+                  responsable._id
+                }
+                className="responsible-card"
+              >
+
+                {/* CABECERA */}
+
+                <div className="responsible-card-header">
+
+                  <div className="responsible-avatar">
+                    {obtenerIniciales(
+                      responsable
+                    )}
+                  </div>
+
+                  <div className="responsible-main-info">
+
+                    <h3>
+                      {responsable.nombre}{' '}
+                      {responsable.apellido}
+                    </h3>
+
+                    <span>
+                      {responsable.relacion ||
+                        'Relación sin especificar'}
+                    </span>
+
+                  </div>
+
+                </div>
+
+                {/* BADGES */}
+
+                {(responsable.principal ||
+                  responsable.contactoEmergencia) && (
+                  <div className="responsible-badges">
+
+                    {responsable.principal && (
+                      <span className="responsible-badge primary">
+                        Responsable principal
+                      </span>
+                    )}
+
+                    {responsable.contactoEmergencia && (
+                      <span className="responsible-badge emergency">
+                        Emergencia
+                      </span>
+                    )}
+
+                  </div>
+                )}
+
+                {/* DATOS */}
+
+                <div className="responsible-contact-list">
+
+                  <div>
+                    <span>
+                      Teléfono
+                    </span>
+
+                    <strong>
+                      {responsable.telefono ||
+                        'Sin teléfono'}
+                    </strong>
+                  </div>
+
+                  <div>
+                    <span>
+                      Email
+                    </span>
+
+                    <strong>
+                      {responsable.email ||
+                        'Sin email'}
+                    </strong>
+                  </div>
+
+                </div>
+
+                {/* OBSERVACIONES */}
+
+                {responsable.observaciones && (
+                  <div className="responsible-notes">
+
+                    <span>
+                      Observaciones
+                    </span>
+
+                    <p>
+                      {
+                        responsable.observaciones
+                      }
+                    </p>
+
+                  </div>
+                )}
+
+                {/* ACCIONES */}
+
+                <div className="responsible-actions">
+
+                  <button
+                    type="button"
+                    className="responsible-edit"
+                    onClick={() =>
+                      handleEditarResponsable(
+                        responsable
+                      )
+                    }
+                  >
+                    Editar
+                  </button>
+
+                  <button
+                    type="button"
+                    className="responsible-delete"
+                    onClick={() =>
+                      handleEliminarResponsable(
+                        responsable
+                      )
+                    }
+                  >
+                    Eliminar
+                  </button>
+
+                </div>
+
+              </article>
+            )
+          )}
+
+        </div>
+      )}
+
     </section>
   )
 }

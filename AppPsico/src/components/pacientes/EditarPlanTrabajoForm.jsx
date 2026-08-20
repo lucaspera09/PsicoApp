@@ -10,9 +10,11 @@ export default function EditarPlanTrabajoForm({
   const [form, setForm] = useState({
     titulo: plan.titulo || '',
     descripcion: plan.descripcion || '',
+
     fechaInicio: plan.fechaInicio
       ? plan.fechaInicio.substring(0, 10)
       : '',
+
     fechaFin: plan.fechaFin
       ? plan.fechaFin.substring(0, 10)
       : ''
@@ -39,7 +41,10 @@ export default function EditarPlanTrabajoForm({
   const [error, setError] = useState(null)
 
   const handleChange = (event) => {
-    const { name, value } = event.target
+    const {
+      name,
+      value
+    } = event.target
 
     setForm((prev) => ({
       ...prev,
@@ -66,6 +71,10 @@ export default function EditarPlanTrabajoForm({
           : objetivo
       )
     )
+
+    if (error) {
+      setError(null)
+    }
   }
 
   const agregarObjetivo = () => {
@@ -81,22 +90,27 @@ export default function EditarPlanTrabajoForm({
 
   const eliminarObjetivo = (index) => {
     setObjetivos((prev) =>
-      prev.filter((_, i) => i !== index)
+      prev.filter(
+        (_, i) =>
+          i !== index
+      )
     )
   }
 
   const handleSubmit = async (event) => {
     event.preventDefault()
 
-    const objetivosValidos = objetivos.filter(
-      (objetivo) =>
-        objetivo.descripcion.trim() !== ''
-    )
+    const objetivosValidos =
+      objetivos.filter(
+        (objetivo) =>
+          objetivo.descripcion.trim() !== ''
+      )
 
     if (objetivosValidos.length === 0) {
       setError(
         'El plan debe tener al menos un objetivo'
       )
+
       return
     }
 
@@ -105,34 +119,49 @@ export default function EditarPlanTrabajoForm({
       setError(null)
 
       const datos = {
-        titulo: form.titulo.trim(),
-        descripcion: form.descripcion.trim(),
-        fechaInicio: form.fechaInicio,
-        objetivos: objetivosValidos.map(
-          (objetivo) => ({
-            descripcion:
-              objetivo.descripcion.trim(),
-            estado: objetivo.estado,
-            observacion:
-              objetivo.observacion.trim()
-          })
-        )
+        titulo:
+          form.titulo.trim(),
+
+        descripcion:
+          form.descripcion.trim(),
+
+        fechaInicio:
+          form.fechaInicio,
+
+        objetivos:
+          objetivosValidos.map(
+            (objetivo) => ({
+              descripcion:
+                objetivo.descripcion.trim(),
+
+              estado:
+                objetivo.estado,
+
+              observacion:
+                objetivo.observacion.trim()
+            })
+          )
       }
 
       if (form.fechaFin) {
-        datos.fechaFin = form.fechaFin
+        datos.fechaFin =
+          form.fechaFin
       }
 
-      const response = await api.put(
-        `/planes-trabajo/${plan._id}`,
-        datos
-      )
+      const response =
+        await api.put(
+          `/planes-trabajo/${plan._id}`,
+          datos
+        )
 
       const planActualizado =
-        response.data?.data || response.data
+        response.data?.data ||
+        response.data
 
       if (onUpdated) {
-        onUpdated(planActualizado)
+        onUpdated(
+          planActualizado
+        )
       }
     } catch (error) {
       console.error(
@@ -150,176 +179,330 @@ export default function EditarPlanTrabajoForm({
   }
 
   return (
-    <section>
-      <h3>Editar plan de trabajo</h3>
+    <section className="plan-form-section">
 
-      <form onSubmit={handleSubmit}>
-
-        <div>
-          <label htmlFor="editar-plan-titulo">
-            Título
-          </label>
-
-          <input
-            id="editar-plan-titulo"
-            name="titulo"
-            type="text"
-            value={form.titulo}
-            onChange={handleChange}
-            required
-          />
-        </div>
+      <div className="plan-form-header">
 
         <div>
-          <label htmlFor="editar-plan-descripcion">
-            Descripción
-          </label>
+          <p className="plan-form-eyebrow">
+            Planificación terapéutica
+          </p>
 
-          <textarea
-            id="editar-plan-descripcion"
-            name="descripcion"
-            value={form.descripcion}
-            onChange={handleChange}
-            rows="4"
-          />
+          <h3>
+            Editar plan de trabajo
+          </h3>
+
+          <p>
+            Actualizá el período,
+            la descripción y los objetivos.
+          </p>
         </div>
 
-        <div>
-          <label htmlFor="editar-plan-inicio">
-            Fecha de inicio
-          </label>
+      </div>
 
-          <input
-            id="editar-plan-inicio"
-            name="fechaInicio"
-            type="date"
-            value={form.fechaInicio}
-            onChange={handleChange}
-            required
-          />
-        </div>
+      <form
+        onSubmit={handleSubmit}
+        className="plan-form"
+      >
 
-        <div>
-          <label htmlFor="editar-plan-fin">
-            Fecha de finalización
-          </label>
+        {/* INFORMACIÓN GENERAL */}
 
-          <input
-            id="editar-plan-fin"
-            name="fechaFin"
-            type="date"
-            value={form.fechaFin}
-            onChange={handleChange}
-          />
-        </div>
+        <div className="plan-form-block">
 
-        <hr />
+          <div className="plan-form-block-title">
 
-        <h4>Objetivos</h4>
-
-        {objetivos.map((objetivo, index) => (
-          <div key={objetivo._id || index}>
-
-            <h5>
-              Objetivo {index + 1}
-            </h5>
+            <span className="plan-form-step">
+              1
+            </span>
 
             <div>
-              <label>
-                Descripción
+              <h4>
+                Información general
+              </h4>
+
+              <p>
+                Datos principales del plan.
+              </p>
+            </div>
+
+          </div>
+
+          <div className="plan-form-grid">
+
+            <div className="form-group plan-form-full">
+
+              <label htmlFor="editar-plan-titulo">
+                Título
               </label>
 
               <input
+                id="editar-plan-titulo"
+                name="titulo"
                 type="text"
-                value={objetivo.descripcion}
-                onChange={(event) =>
-                  handleObjetivoChange(
-                    index,
-                    'descripcion',
-                    event.target.value
-                  )
-                }
+                value={form.titulo}
+                onChange={handleChange}
+                className="form-control"
+                placeholder="Ej: Plan de trabajo 2026"
                 required
               />
+
             </div>
 
-            <div>
-              <label>
-                Estado
+            <div className="form-group">
+
+              <label htmlFor="editar-plan-inicio">
+                Fecha de inicio
               </label>
 
-              <select
-                value={objetivo.estado}
-                onChange={(event) =>
-                  handleObjetivoChange(
-                    index,
-                    'estado',
-                    event.target.value
-                  )
-                }
-              >
-                <option value="pendiente">
-                  Pendiente
-                </option>
+              <input
+                id="editar-plan-inicio"
+                name="fechaInicio"
+                type="date"
+                value={form.fechaInicio}
+                onChange={handleChange}
+                className="form-control"
+                required
+              />
 
-                <option value="en_progreso">
-                  En progreso
-                </option>
-
-                <option value="logrado">
-                  Logrado
-                </option>
-              </select>
             </div>
 
-            <div>
-              <label>
-                Observación
+            <div className="form-group">
+
+              <label htmlFor="editar-plan-fin">
+                Fecha de finalización
+              </label>
+
+              <input
+                id="editar-plan-fin"
+                name="fechaFin"
+                type="date"
+                value={form.fechaFin}
+                onChange={handleChange}
+                className="form-control"
+              />
+
+            </div>
+
+            <div className="form-group plan-form-full">
+
+              <label htmlFor="editar-plan-descripcion">
+                Descripción general
               </label>
 
               <textarea
-                value={objetivo.observacion}
-                onChange={(event) =>
-                  handleObjetivoChange(
-                    index,
-                    'observacion',
-                    event.target.value
-                  )
-                }
-                rows="3"
+                id="editar-plan-descripcion"
+                name="descripcion"
+                value={form.descripcion}
+                onChange={handleChange}
+                className="form-control plan-form-textarea"
+                rows="4"
+                placeholder="Descripción general del plan..."
               />
+
             </div>
 
-            {objetivos.length > 1 && (
-              <button
-                type="button"
-                onClick={() =>
-                  eliminarObjetivo(index)
-                }
-              >
-                Eliminar objetivo
-              </button>
-            )}
+          </div>
 
-            <hr />
+        </div>
+
+        {/* OBJETIVOS */}
+
+        <div className="plan-form-block">
+
+          <div className="plan-form-block-title plan-form-objectives-header">
+
+            <div className="plan-form-title-left">
+
+              <span className="plan-form-step">
+                2
+              </span>
+
+              <div>
+                <h4>
+                  Objetivos
+                </h4>
+
+                <p>
+                  Modificá o agregá objetivos.
+                </p>
+              </div>
+
+            </div>
+
+            <span className="plan-objective-count">
+              {objetivos.length}{' '}
+              {objetivos.length === 1
+                ? 'objetivo'
+                : 'objetivos'}
+            </span>
 
           </div>
-        ))}
 
-        <button
-          type="button"
-          onClick={agregarObjetivo}
-        >
-          + Agregar objetivo
-        </button>
+          <div className="plan-objectives-list">
+
+            {objetivos.map(
+              (objetivo, index) => (
+                <div
+                  key={
+                    objetivo._id ||
+                    index
+                  }
+                  className="plan-objective-card"
+                >
+
+                  <div className="plan-objective-card-header">
+
+                    <div className="plan-objective-number">
+                      {index + 1}
+                    </div>
+
+                    <div className="plan-objective-card-title">
+
+                      <strong>
+                        Objetivo {index + 1}
+                      </strong>
+
+                      <span>
+                        Definí qué se busca trabajar.
+                      </span>
+
+                    </div>
+
+                    {objetivos.length > 1 && (
+                      <button
+                        type="button"
+                        className="plan-objective-delete"
+                        onClick={() =>
+                          eliminarObjetivo(
+                            index
+                          )
+                        }
+                        aria-label={`Eliminar objetivo ${index + 1}`}
+                      >
+                        ×
+                      </button>
+                    )}
+
+                  </div>
+
+                  <div className="plan-objective-grid">
+
+                    <div className="form-group plan-objective-description">
+
+                      <label>
+                        Descripción
+                      </label>
+
+                      <input
+                        type="text"
+                        value={
+                          objetivo.descripcion
+                        }
+                        onChange={(event) =>
+                          handleObjetivoChange(
+                            index,
+                            'descripcion',
+                            event.target.value
+                          )
+                        }
+                        className="form-control"
+                        placeholder="Ej: Mejorar coordinación motriz"
+                        required
+                      />
+
+                    </div>
+
+                    <div className="form-group">
+
+                      <label>
+                        Estado
+                      </label>
+
+                      <select
+                        value={
+                          objetivo.estado
+                        }
+                        onChange={(event) =>
+                          handleObjetivoChange(
+                            index,
+                            'estado',
+                            event.target.value
+                          )
+                        }
+                        className="form-control"
+                      >
+                        <option value="pendiente">
+                          Pendiente
+                        </option>
+
+                        <option value="en_progreso">
+                          En progreso
+                        </option>
+
+                        <option value="logrado">
+                          Logrado
+                        </option>
+                      </select>
+
+                    </div>
+
+                    <div className="form-group plan-objective-observation">
+
+                      <label>
+                        Observación
+                      </label>
+
+                      <textarea
+                        value={
+                          objetivo.observacion
+                        }
+                        onChange={(event) =>
+                          handleObjetivoChange(
+                            index,
+                            'observacion',
+                            event.target.value
+                          )
+                        }
+                        className="form-control"
+                        rows="3"
+                        placeholder="Observaciones sobre este objetivo..."
+                      />
+
+                    </div>
+
+                  </div>
+
+                </div>
+              )
+            )}
+
+          </div>
+
+          <button
+            type="button"
+            className="plan-add-objective"
+            onClick={agregarObjetivo}
+          >
+            <span>
+              +
+            </span>
+
+            Agregar otro objetivo
+          </button>
+
+        </div>
 
         {error && (
-          <p>{error}</p>
+          <div className="plan-form-error">
+            {error}
+          </div>
         )}
 
-        <div>
+        <div className="plan-form-actions">
+
           <button
             type="submit"
+            className="btn btn-primary"
             disabled={loading}
           >
             {loading
@@ -327,18 +510,19 @@ export default function EditarPlanTrabajoForm({
               : 'Guardar cambios'}
           </button>
 
-          {' '}
-
           <button
             type="button"
+            className="btn btn-secondary"
             onClick={onCancel}
             disabled={loading}
           >
             Cancelar
           </button>
+
         </div>
 
       </form>
+
     </section>
   )
 }

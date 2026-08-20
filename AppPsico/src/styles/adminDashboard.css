@@ -1,0 +1,264 @@
+.admin-dashboard-page {
+  width: 100%;
+}
+
+
+/* HEADER */
+
+.admin-dashboard-hero {
+  margin-bottom: 26px;
+}
+
+.admin-dashboard-eyebrow {
+  margin-bottom: 5px;
+
+  color:
+    var(--color-primary);
+
+  font-size: 12px;
+  font-weight: 800;
+
+  text-transform: uppercase;
+
+  letter-spacing: 0.07em;
+}
+
+.admin-dashboard-hero h1 {
+  margin-bottom: 7px;
+
+  font-size: 32px;
+}
+
+.admin-dashboard-hero p {
+  margin: 0;
+
+  color:
+    var(--color-text-soft);
+}
+
+
+/* RESUMEN */
+
+.admin-dashboard-summary {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 14px;
+
+  margin-bottom: 28px;
+}
+
+.admin-summary-card {
+  display: flex;
+  align-items: center;
+
+  gap: 14px;
+
+  padding: 18px;
+
+  border:
+    1px solid
+    var(--color-border);
+
+  border-radius: 16px;
+
+  background: white;
+
+  box-shadow:
+    var(--shadow-sm);
+}
+
+.admin-summary-icon {
+  width: 48px;
+  height: 48px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 14px;
+
+  background:
+    var(--color-primary-soft);
+
+  color:
+    var(--color-primary);
+
+  font-size: 21px;
+  font-weight: 800;
+}
+
+.admin-summary-card > div:last-child {
+  display: flex;
+  flex-direction: column;
+
+  gap: 3px;
+}
+
+.admin-summary-card span {
+  color:
+    var(--color-text-soft);
+
+  font-size: 11px;
+  font-weight: 700;
+
+  text-transform: uppercase;
+}
+
+.admin-summary-card strong {
+  font-size: 15px;
+}
+
+
+/* SECCION */
+
+.admin-dashboard-section-header {
+  margin-bottom: 14px;
+}
+
+.admin-dashboard-section-header h2 {
+  margin-bottom: 4px;
+
+  font-size: 21px;
+}
+
+.admin-dashboard-section-header p {
+  margin: 0;
+
+  color:
+    var(--color-text-soft);
+
+  font-size: 13px;
+}
+
+
+/* ACCIONES */
+
+.admin-dashboard-actions {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      auto-fill,
+      minmax(280px, 1fr)
+    );
+
+  gap: 14px;
+}
+
+.admin-dashboard-action-card {
+  display: flex;
+  align-items: center;
+
+  gap: 14px;
+
+  min-height: 105px;
+
+  padding: 18px;
+
+  border:
+    1px solid
+    var(--color-border);
+
+  border-radius: 16px;
+
+  background: white;
+
+  box-shadow:
+    var(--shadow-sm);
+
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s,
+    border-color 0.15s;
+}
+
+.admin-dashboard-action-card:hover {
+  transform:
+    translateY(-2px);
+
+  border-color:
+    #d7d3fa;
+
+  box-shadow:
+    var(--shadow-md);
+}
+
+.admin-dashboard-action-icon {
+  width: 48px;
+  height: 48px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 14px;
+
+  background:
+    var(--color-primary-soft);
+
+  color:
+    var(--color-primary);
+
+  font-size: 21px;
+}
+
+.admin-dashboard-action-content {
+  flex: 1;
+
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 4px;
+}
+
+.admin-dashboard-action-content strong {
+  font-size: 15px;
+}
+
+.admin-dashboard-action-content span {
+  color:
+    var(--color-text-soft);
+
+  font-size: 12px;
+
+  line-height: 1.45;
+}
+
+.admin-dashboard-arrow {
+  flex-shrink: 0;
+
+  color:
+    var(--color-primary);
+
+  font-size: 22px;
+}
+
+
+/* MOBILE */
+
+@media (max-width: 768px) {
+  .admin-dashboard-hero h1 {
+    font-size: 27px;
+  }
+
+  .admin-dashboard-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-dashboard-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-dashboard-action-card {
+    min-height: 95px;
+  }
+}

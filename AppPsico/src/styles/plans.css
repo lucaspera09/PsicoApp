@@ -1,0 +1,822 @@
+.plans-section {
+  width: 100%;
+}
+
+.plans-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+
+  gap: 16px;
+
+  margin-bottom: 20px;
+}
+
+.plans-eyebrow {
+  margin-bottom: 3px;
+
+  color: var(--color-primary);
+
+  font-size: 11px;
+  font-weight: 800;
+
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.plans-header h2 {
+  margin-bottom: 5px;
+
+  font-size: 21px;
+}
+
+.plans-header > div > p:last-child {
+  margin: 0;
+
+  color: var(--color-text-soft);
+
+  font-size: 13px;
+}
+
+.plans-new-button {
+  min-height: 45px;
+
+  padding: 10px 16px;
+
+  border: none;
+  border-radius: 12px;
+
+  background: var(--color-primary);
+
+  color: white;
+
+  font-weight: 750;
+}
+
+.plans-form-wrapper {
+  padding: 17px;
+
+  margin-bottom: 18px;
+
+  border: 1px solid var(--color-border);
+  border-radius: 15px;
+
+  background: var(--color-surface-soft);
+}
+
+.plans-list {
+  display: flex;
+  flex-direction: column;
+
+  gap: 14px;
+}
+
+.plan-card {
+  padding: 18px;
+
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+
+  background: white;
+
+  box-shadow: var(--shadow-sm);
+}
+
+.plan-card-header {
+  display: flex;
+  justify-content: space-between;
+
+  gap: 15px;
+
+  margin-bottom: 15px;
+}
+
+.plan-status {
+  display: inline-flex;
+
+  padding: 5px 8px;
+
+  margin-bottom: 6px;
+
+  border-radius: 999px;
+
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.plan-status.active {
+  background: var(--color-success-soft);
+
+  color: var(--color-success);
+}
+
+.plan-status.finished {
+  background: var(--color-surface-soft);
+
+  color: var(--color-text-soft);
+}
+
+.plan-card h3 {
+  margin: 0;
+
+  font-size: 18px;
+}
+
+.plan-dates {
+  color: var(--color-text-soft);
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.plan-description {
+  padding: 13px;
+
+  margin-bottom: 16px;
+
+  border-radius: 11px;
+
+  background: var(--color-surface-soft);
+}
+
+.plan-description span {
+  display: block;
+
+  margin-bottom: 5px;
+
+  color: var(--color-text-soft);
+
+  font-size: 10px;
+  font-weight: 800;
+
+  text-transform: uppercase;
+}
+
+.plan-description p {
+  margin: 0;
+
+  font-size: 14px;
+
+  line-height: 1.5;
+}
+
+.plan-objectives-header {
+  display: flex;
+  align-items: center;
+
+  gap: 7px;
+
+  margin-bottom: 10px;
+}
+
+.plan-objectives-header h4 {
+  margin: 0;
+
+  font-size: 15px;
+}
+
+.plan-objectives-header > span {
+  min-width: 24px;
+  height: 24px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 999px;
+
+  background: var(--color-primary-soft);
+
+  color: var(--color-primary);
+
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.plan-objectives-list {
+  display: flex;
+  flex-direction: column;
+
+  gap: 8px;
+}
+
+.plan-objective {
+  padding: 12px;
+
+  border: 1px solid var(--color-border);
+  border-radius: 11px;
+}
+
+.plan-objective-top {
+  display: flex;
+  justify-content: space-between;
+
+  gap: 10px;
+}
+
+.plan-objective-top strong {
+  font-size: 13px;
+
+  line-height: 1.4;
+}
+
+.plan-objective p {
+  margin: 7px 0 0;
+
+  color: var(--color-text-soft);
+
+  font-size: 12px;
+}
+
+.objective-status {
+  flex-shrink: 0;
+
+  padding: 5px 8px;
+
+  border-radius: 999px;
+
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.objective-status.pending {
+  background: var(--color-warning-soft);
+
+  color: var(--color-warning);
+}
+
+.objective-status.progress {
+  background: var(--color-info-soft);
+
+  color: var(--color-info);
+}
+
+.objective-status.achieved {
+  background: var(--color-success-soft);
+
+  color: var(--color-success);
+}
+
+.plan-actions {
+  display: grid;
+
+  grid-template-columns:
+    1fr 1fr 1fr;
+
+  gap: 7px;
+
+  margin-top: 17px;
+}
+
+.plan-actions button {
+  min-height: 40px;
+
+  border-radius: 9px;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.plan-edit {
+  border: 1px solid var(--color-border);
+
+  background: white;
+}
+
+.plan-state {
+  border: none;
+
+  background: var(--color-primary-soft);
+
+  color: var(--color-primary);
+}
+
+.plan-delete {
+  border: none;
+
+  background: var(--color-danger-soft);
+
+  color: var(--color-danger);
+}
+
+.plan-empty-objectives {
+  color: var(--color-text-soft);
+
+  font-size: 13px;
+}
+
+.plans-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  padding: 35px 20px;
+
+  text-align: center;
+
+  border: 1px dashed var(--color-border);
+  border-radius: 15px;
+}
+
+.plans-empty-icon {
+  width: 50px;
+  height: 50px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-bottom: 10px;
+
+  border-radius: 14px;
+
+  background: var(--color-primary-soft);
+
+  color: var(--color-primary);
+
+  font-size: 24px;
+}
+
+.plans-empty h3 {
+  margin-bottom: 5px;
+}
+
+.plans-empty p {
+  margin: 0;
+
+  color: var(--color-text-soft);
+
+  font-size: 13px;
+}
+
+@media (max-width: 768px) {
+  .plans-header {
+    flex-direction: column;
+  }
+
+  .plans-new-button {
+    width: 100%;
+
+    min-height: 52px;
+  }
+
+  .plan-card-header {
+    flex-direction: column;
+  }
+
+  .plan-objective-top {
+    flex-direction: column;
+  }
+
+  .objective-status {
+    align-self: flex-start;
+  }
+
+  .plan-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .plan-actions button {
+    min-height: 44px;
+  }
+}
+/* =========================
+   FORMULARIO PLAN DE TRABAJO
+========================= */
+
+.plan-form-section {
+  width: 100%;
+}
+
+.plan-form-header {
+  margin-bottom: 20px;
+}
+
+.plan-form-eyebrow {
+  margin: 0 0 4px;
+
+  color: var(--color-primary);
+
+  font-size: 10px;
+  font-weight: 800;
+
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.plan-form-header h3 {
+  margin: 0 0 5px;
+
+  font-size: 21px;
+}
+
+.plan-form-header p {
+  margin: 0;
+
+  color: var(--color-text-soft);
+
+  font-size: 12px;
+}
+
+.plan-form {
+  display: flex;
+  flex-direction: column;
+
+  gap: 18px;
+}
+
+
+/* BLOQUES */
+
+.plan-form-block {
+  padding: 16px;
+
+  border:
+    1px solid
+    var(--color-border);
+
+  border-radius: 14px;
+
+  background:
+    var(--color-surface-soft);
+}
+
+.plan-form-block-title {
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  margin-bottom: 16px;
+}
+
+.plan-form-title-left {
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+}
+
+.plan-form-step {
+  width: 30px;
+  height: 30px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 9px;
+
+  background:
+    var(--color-primary);
+
+  color: white;
+
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.plan-form-block-title h4 {
+  margin: 0 0 2px;
+
+  font-size: 13px;
+}
+
+.plan-form-block-title p {
+  margin: 0;
+
+  color:
+    var(--color-text-soft);
+
+  font-size: 10px;
+}
+
+
+/* CAMPOS GENERALES */
+
+.plan-form-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 14px;
+}
+
+.plan-form-full {
+  grid-column: 1 / -1;
+}
+
+.plan-form .form-group {
+  min-width: 0;
+}
+
+.plan-form .form-group label {
+  display: block;
+
+  margin-bottom: 6px;
+
+  color:
+    var(--color-text);
+
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.plan-form .form-control {
+  width: 100%;
+
+  min-height: 47px;
+
+  padding: 10px 12px;
+
+  border:
+    1px solid
+    var(--color-border);
+
+  border-radius: 10px;
+
+  background: white;
+
+  color:
+    var(--color-text);
+
+  font: inherit;
+
+  outline: none;
+
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+
+.plan-form .form-control:focus {
+  border-color:
+    var(--color-primary);
+
+  box-shadow:
+    0 0 0 4px
+    var(--color-primary-soft);
+}
+
+.plan-form-textarea {
+  min-height: 95px;
+
+  resize: vertical;
+}
+
+
+/* OBJETIVOS */
+
+.plan-form-objectives-header {
+  justify-content: space-between;
+}
+
+.plan-objective-count {
+  flex-shrink: 0;
+
+  padding: 5px 9px;
+
+  border-radius: 999px;
+
+  background:
+    var(--color-primary-soft);
+
+  color:
+    var(--color-primary);
+
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.plan-objectives-list {
+  display: flex;
+  flex-direction: column;
+
+  gap: 11px;
+}
+
+.plan-objective-card {
+  padding: 14px;
+
+  border:
+    1px solid
+    var(--color-border);
+
+  border-radius: 12px;
+
+  background: white;
+}
+
+.plan-objective-card-header {
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+
+  margin-bottom: 13px;
+}
+
+.plan-objective-number {
+  width: 28px;
+  height: 28px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 8px;
+
+  background:
+    var(--color-primary-soft);
+
+  color:
+    var(--color-primary);
+
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.plan-objective-card-title {
+  flex: 1;
+
+  min-width: 0;
+}
+
+.plan-objective-card-title strong {
+  display: block;
+
+  margin-bottom: 1px;
+
+  font-size: 11px;
+}
+
+.plan-objective-card-title span {
+  display: block;
+
+  color:
+    var(--color-text-soft);
+
+  font-size: 9px;
+}
+
+.plan-objective-delete {
+  width: 30px;
+  height: 30px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  border:
+    1px solid
+    var(--color-danger-soft);
+
+  border-radius: 8px;
+
+  background:
+    var(--color-danger-soft);
+
+  color:
+    var(--color-danger);
+
+  font-size: 18px;
+  line-height: 1;
+
+  cursor: pointer;
+}
+
+.plan-objective-grid {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 2fr)
+    minmax(150px, 1fr);
+
+  gap: 12px;
+}
+
+.plan-objective-observation {
+  grid-column: 1 / -1;
+}
+
+.plan-objective-observation textarea {
+  min-height: 75px;
+
+  resize: vertical;
+}
+
+
+/* AGREGAR OBJETIVO */
+
+.plan-add-objective {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 7px;
+
+  min-height: 45px;
+
+  margin-top: 12px;
+
+  padding: 9px 13px;
+
+  border:
+    1px dashed
+    var(--color-primary);
+
+  border-radius: 11px;
+
+  background:
+    var(--color-primary-soft);
+
+  color:
+    var(--color-primary);
+
+  font-size: 11px;
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+.plan-add-objective span {
+  font-size: 17px;
+  line-height: 1;
+}
+
+
+/* ERROR */
+
+.plan-form-error {
+  padding: 11px 13px;
+
+  border-radius: 10px;
+
+  background:
+    var(--color-danger-soft);
+
+  color:
+    var(--color-danger);
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+
+/* ACCIONES */
+
+.plan-form-actions {
+  display: flex;
+
+  gap: 10px;
+}
+
+.plan-form-actions .btn {
+  min-height: 47px;
+
+  padding: 10px 18px;
+}
+
+
+/* MOBILE */
+
+@media (max-width: 768px) {
+  .plan-form-grid,
+  .plan-objective-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .plan-form-full,
+  .plan-objective-observation {
+    grid-column: auto;
+  }
+
+  .plan-form-block {
+    padding: 12px;
+  }
+
+  .plan-form-objectives-header {
+    align-items: flex-start;
+  }
+
+  .plan-form-actions {
+    flex-direction: column;
+  }
+
+  .plan-form-actions .btn {
+    width: 100%;
+
+    min-height: 51px;
+  }
+}

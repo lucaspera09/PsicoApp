@@ -107,46 +107,63 @@ export default function NotasPaciente({
 
     return tipos[tipo] || tipo
   }
-const handleEliminarNota = async (nota) => {
-  const confirmado = window.confirm(
-    `¿Querés eliminar la nota "${nota.titulo}"?`
-  )
 
-  if (!confirmado) {
-    return
-  }
-
-  try {
-    await api.delete(
-      `/notas/${nota._id}`
+  const handleEliminarNota = async (nota) => {
+    const confirmado = window.confirm(
+      `¿Querés eliminar la nota "${nota.titulo}"?`
     )
 
-    setNotas((prev) =>
-      prev.filter(
-        (item) => item._id !== nota._id
-      )
-    )
-
-    if (notaEditando?._id === nota._id) {
-      setNotaEditando(null)
+    if (!confirmado) {
+      return
     }
-  } catch (error) {
-    console.error(
-      'Error al eliminar nota:',
-      error
-    )
 
-    alert(
-      error.response?.data?.message ||
-      'No se pudo eliminar la nota'
-    )
+    try {
+      await api.delete(
+        `/notas/${nota._id}`
+      )
+
+      setNotas((prev) =>
+        prev.filter(
+          (item) => item._id !== nota._id
+        )
+      )
+
+      if (notaEditando?._id === nota._id) {
+        setNotaEditando(null)
+      }
+    } catch (error) {
+      console.error(
+        'Error al eliminar nota:',
+        error
+      )
+
+      alert(
+        error.response?.data?.message ||
+        'No se pudo eliminar la nota'
+      )
+    }
   }
-}
+
+  const formatearFecha = (fecha) => {
+    if (!fecha) {
+      return 'Sin fecha'
+    }
+
+    return new Date(fecha)
+      .toLocaleDateString(
+        'es-UY',
+        {
+          day: '2-digit',
+          month: 'long',
+          year: 'numeric'
+        }
+      )
+  }
+
   if (loading) {
     return (
-      <section>
+      <section className="notes-section">
         <h2>Notas y entrevistas</h2>
-
         <p>Cargando notas...</p>
       </section>
     )
@@ -154,106 +171,147 @@ const handleEliminarNota = async (nota) => {
 
   if (error) {
     return (
-      <section>
+      <section className="notes-section">
         <h2>Notas y entrevistas</h2>
-
         <p>{error}</p>
       </section>
     )
   }
 
   return (
-    <section>
-      <h2>Notas y entrevistas</h2>
+    <section className="notes-section">
 
-      {!mostrarFormulario && !notaEditando && (
-        <button
-          type="button"
-          onClick={() =>
-            setMostrarFormulario(true)
-          }
-        >
-          + Nueva nota
-        </button>
-      )}
+      <div className="notes-header">
+
+        <div>
+          <p className="notes-eyebrow">
+            Seguimiento
+          </p>
+
+          <h2>
+            Notas y entrevistas
+          </h2>
+
+          <p>
+            Entrevistas, llamadas,
+            reuniones y observaciones
+            relacionadas al paciente.
+          </p>
+        </div>
+
+        {!mostrarFormulario &&
+          !notaEditando && (
+            <button
+              type="button"
+              className="notes-new-button"
+              onClick={() =>
+                setMostrarFormulario(true)
+              }
+            >
+              + Nueva nota
+            </button>
+          )}
+
+      </div>
 
       {mostrarFormulario && (
-        <CrearNotaForm
-          pacienteId={pacienteId}
-          onCreated={handleNotaCreada}
-          onCancel={handleCancelar}
-        />
+        <div className="notes-form-wrapper">
+          <CrearNotaForm
+            pacienteId={pacienteId}
+            onCreated={handleNotaCreada}
+            onCancel={handleCancelar}
+          />
+        </div>
       )}
 
       {notaEditando && (
-        <EditarNotaForm
-          nota={notaEditando}
-          onUpdated={handleNotaActualizada}
-          onCancel={handleCancelarEdicion}
-        />
+        <div className="notes-form-wrapper">
+          <EditarNotaForm
+            nota={notaEditando}
+            onUpdated={handleNotaActualizada}
+            onCancel={handleCancelarEdicion}
+          />
+        </div>
       )}
 
       {notas.length === 0 ? (
-        <p>
-          No hay notas registradas.
-        </p>
+        <div className="notes-empty">
+
+          <div className="notes-empty-icon">
+            ✎
+          </div>
+
+          <h3>
+            No hay notas registradas
+          </h3>
+
+          <p>
+            Las entrevistas y observaciones
+            aparecerán acá.
+          </p>
+
+        </div>
       ) : (
-        <div>
+        <div className="notes-list">
+
           {notas.map((nota) => (
-            <article key={nota._id}>
+            <article
+              key={nota._id}
+              className="note-card"
+            >
 
-              <h3>
-                {nota.titulo}
-              </h3>
+              <div className="note-card-header">
 
-              <p>
-                <strong>Tipo:</strong>{' '}
-                {mostrarTipo(nota.tipo)}
-              </p>
+                <div>
+                  <span className="note-type-badge">
+                    {mostrarTipo(nota.tipo)}
+                  </span>
 
-              <p>
-                <strong>Fecha:</strong>{' '}
-                {nota.fecha
-                  ? new Date(
-                      nota.fecha
-                    ).toLocaleDateString(
-                      'es-UY'
-                    )
-                  : 'Sin fecha'
-                }
-              </p>
+                  <h3>
+                    {nota.titulo}
+                  </h3>
 
-              <p>
-                <strong>Contenido:</strong>{' '}
-                {nota.contenido}
-              </p>
+                  <span className="note-date">
+                    {formatearFecha(nota.fecha)}
+                  </span>
+                </div>
 
-              <div>
-  <button
-    type="button"
-    onClick={() =>
-      handleEditarNota(nota)
-    }
-  >
-    Editar
-  </button>
+                <div className="note-actions">
 
-  {' '}
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleEditarNota(nota)
+                    }
+                  >
+                    Editar
+                  </button>
 
-  <button
-    type="button"
-    onClick={() =>
-      handleEliminarNota(nota)
-    }
-  >
-    Eliminar
-  </button>
-</div>
+                  <button
+                    type="button"
+                    className="note-delete"
+                    onClick={() =>
+                      handleEliminarNota(nota)
+                    }
+                  >
+                    Eliminar
+                  </button>
+
+                </div>
+
+              </div>
+
+              <div className="note-content">
+                {nota.contenido ||
+                  'Sin contenido'}
+              </div>
 
             </article>
           ))}
+
         </div>
       )}
+
     </section>
   )
 }

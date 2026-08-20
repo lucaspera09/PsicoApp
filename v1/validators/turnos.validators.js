@@ -21,6 +21,15 @@ const estadosTurno = [
   'no_asistio'
 ]
 
+const participanteSchema = z.object({
+  paciente: objectId,
+
+  estado: z
+    .enum(estadosTurno)
+    .optional()
+    .default('programado')
+})
+
 const recurrenciaSchema = z.object({
   tipo: z
     .literal('semanal')
@@ -47,16 +56,16 @@ const recurrenciaSchema = z.object({
 
 export const createTurnoSchema = z
   .object({
-    paciente: objectId,
+    participantes: z
+      .array(participanteSchema)
+      .min(
+        1,
+        'Debe seleccionar al menos un paciente'
+      ),
 
     fechaInicio: fechaValida,
 
     fechaFin: fechaValida,
-
-    estado: z
-      .enum(estadosTurno)
-      .optional()
-      .default('programado'),
 
     recurrente: z
       .boolean()
@@ -94,34 +103,92 @@ export const createTurnoSchema = z
       path: ['recurrencia']
     }
   )
+  .refine(
+    (data) => {
+      const ids =
+        data.participantes.map(
+          (participante) =>
+            participante.paciente
+        )
 
-export const updateTurnoSchema = z.object({
-  paciente: objectId.optional(),
+      return (
+        new Set(ids).size ===
+        ids.length
+      )
+    },
+    {
+      message:
+        'No puede haber pacientes repetidos en el mismo turno',
+      path: ['participantes']
+    }
+  )
 
-  fechaInicio: fechaValida.optional(),
+export const updateTurnoSchema = z
+  .object({
+    participantes: z
+      .array(participanteSchema)
+      .min(
+        1,
+        'Debe seleccionar al menos un paciente'
+      )
+      .optional(),
 
-  fechaFin: fechaValida.optional(),
+    fechaInicio:
+      fechaValida.optional(),
 
-  recurrente: z
-    .boolean()
-    .optional(),
+    fechaFin:
+      fechaValida.optional(),
 
-  recurrencia: recurrenciaSchema
-    .nullable()
-    .optional(),
+    recurrente: z
+      .boolean()
+      .optional(),
 
-  observacion: z
-    .string()
-    .trim()
-    .max(5000)
-    .optional()
-})
+    recurrencia: recurrenciaSchema
+      .nullable()
+      .optional(),
+
+    observacion: z
+      .string()
+      .trim()
+      .max(5000)
+      .optional()
+  })
+  .refine(
+    (data) => {
+      if (
+        !data.participantes
+      ) {
+        return true
+      }
+
+      const ids =
+        data.participantes.map(
+          (participante) =>
+            participante.paciente
+        )
+
+      return (
+        new Set(ids).size ===
+        ids.length
+      )
+    },
+    {
+      message:
+        'No puede haber pacientes repetidos en el mismo turno',
+      path: ['participantes']
+    }
+  )
 
 export const changeTurnoStatusSchema = z.object({
-  estado: z.enum(estadosTurno, {
-    errorMap: () => ({
-      message:
-        'El estado debe ser programado, realizado, cancelado o no_asistio'
-    })
-  })
+  pacienteId: objectId,
+
+  estado: z.enum(
+    estadosTurno,
+    {
+      errorMap: () => ({
+        message:
+          'El estado debe ser programado, realizado, cancelado o no_asistio'
+      })
+    }
+  )
 })

@@ -8,6 +8,7 @@ import {
 } from 'react-router'
 
 import ProtectedRoute from './app/guards/ProtectedRoute.jsx'
+import MainLayout from './layouts/MainLayout.jsx'
 
 import LoginPage from './pages/LoginPage.jsx'
 import DashboardPage from './pages/DashboardPage.jsx'
@@ -15,6 +16,7 @@ import PacientesPage from './pages/PacientesPage.jsx'
 import PacienteDetallePage from './pages/PacienteDetallePage.jsx'
 import AgendaPage from './pages/AgendaPage.jsx'
 import ProfesionalesPage from './pages/ProfesionalesPage.jsx'
+import HorariosSemanalesPage from './pages/HorariosSemanalesPage.jsx'
 
 import {
   loadCurrentUser
@@ -39,6 +41,8 @@ function App() {
     <BrowserRouter>
       <Routes>
 
+        {/* LOGIN */}
+
         <Route
           path="/login"
           element={
@@ -48,48 +52,105 @@ function App() {
           }
         />
 
-        <Route element={<ProtectedRoute />}>
+        {/* RUTAS PROTEGIDAS GENERALES */}
+
+        <Route
+          element={
+            <ProtectedRoute />
+          }
+        >
           <Route
-            path="/"
-            element={<DashboardPage />}
-          />
+            element={
+              <MainLayout />
+            }
+          >
+
+            <Route
+              path="/"
+              element={
+                <DashboardPage />
+              }
+            />
+
+          </Route>
         </Route>
+
+        {/* ADMIN */}
 
         <Route
           element={
             <ProtectedRoute
-              allowedRoles={['admin']}
+              allowedRoles={[
+                'admin'
+              ]}
             />
           }
         >
           <Route
-            path="/profesionales"
-            element={<ProfesionalesPage />}
-          />
+            element={
+              <MainLayout />
+            }
+          >
+
+            <Route
+              path="/profesionales"
+              element={
+                <ProfesionalesPage />
+              }
+            />
+
+          </Route>
         </Route>
+
+        {/* PROFESIONAL */}
 
         <Route
           element={
             <ProtectedRoute
-              allowedRoles={['profesional']}
+              allowedRoles={[
+                'profesional'
+              ]}
             />
           }
         >
           <Route
-            path="/pacientes"
-            element={<PacientesPage />}
-          />
+            element={
+              <MainLayout />
+            }
+          >
 
-          <Route
-            path="/pacientes/:id"
-            element={<PacienteDetallePage />}
-          />
+            <Route
+              path="/pacientes"
+              element={
+                <PacientesPage />
+              }
+            />
 
-          <Route
-            path="/agenda"
-            element={<AgendaPage />}
-          />
+            <Route
+              path="/pacientes/:id"
+              element={
+                <PacienteDetallePage />
+              }
+            />
+
+            <Route
+              path="/agenda"
+              element={
+                <AgendaPage />
+              }
+            />
+
+            <Route
+              path="/horarios"
+              element={
+                <HorariosSemanalesPage />
+              }
+            />
+
+          </Route>
         </Route>
+
+        {/* CUALQUIER OTRA RUTA */}
 
         <Route
           path="*"

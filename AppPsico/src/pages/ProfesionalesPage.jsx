@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import api from '../api/api.js'
 
@@ -7,10 +7,14 @@ import EditarProfesionalForm from '../components/admin/EditarProfesionalForm.jsx
 
 export default function ProfesionalesPage() {
   const [profesionales, setProfesionales] = useState([])
+  const [busqueda, setBusqueda] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  const [mostrarFormulario, setMostrarFormulario] = useState(false)
+  const [
+    mostrarFormulario,
+    setMostrarFormulario
+  ] = useState(false)
 
   const [
     profesionalEditando,
@@ -28,9 +32,18 @@ export default function ProfesionalesPage() {
         setLoading(true)
         setError(null)
 
-        const response = await api.get('/profesionales')
+        const response =
+          await api.get('/profesionales')
 
-        setProfesionales(response.data.data)
+        const recibidos =
+          response.data?.data ||
+          response.data
+
+        setProfesionales(
+          Array.isArray(recibidos)
+            ? recibidos
+            : []
+        )
       } catch (error) {
         setError(
           error.response?.data?.message ||
@@ -44,7 +57,50 @@ export default function ProfesionalesPage() {
     cargarProfesionales()
   }, [])
 
-  const handleProfesionalCreado = (nuevoProfesional) => {
+  const profesionalesFiltrados =
+    useMemo(() => {
+      const texto =
+        busqueda
+          .trim()
+          .toLowerCase()
+
+      if (!texto) {
+        return profesionales
+      }
+
+      return profesionales.filter(
+        (profesional) => {
+          const nombre =
+            `${profesional.nombre || ''} ${profesional.apellido || ''}`
+              .toLowerCase()
+
+          const profesion =
+            (
+              profesional.profesion ||
+              ''
+            ).toLowerCase()
+
+          const email =
+            (
+              profesional.user?.email ||
+              ''
+            ).toLowerCase()
+
+          return (
+            nombre.includes(texto) ||
+            profesion.includes(texto) ||
+            email.includes(texto)
+          )
+        }
+      )
+    }, [
+      profesionales,
+      busqueda
+    ])
+
+  const handleProfesionalCreado = (
+    nuevoProfesional
+  ) => {
     setProfesionales((prev) => [
       nuevoProfesional,
       ...prev
@@ -60,6 +116,11 @@ export default function ProfesionalesPage() {
   const handleEditar = (profesional) => {
     setMostrarFormulario(false)
     setProfesionalEditando(profesional)
+
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    })
   }
 
   const handleProfesionalActualizado = (
@@ -80,21 +141,28 @@ export default function ProfesionalesPage() {
     setProfesionalEditando(null)
   }
 
-  const handleCambiarEstado = async (profesional) => {
-    const nuevoEstado = !profesional.activo
+  const handleCambiarEstado = async (
+    profesional
+  ) => {
+    const nuevoEstado =
+      !profesional.activo
 
-    const mensaje = nuevoEstado
-      ? `¿Querés activar a ${profesional.nombre} ${profesional.apellido}?`
-      : `¿Querés desactivar a ${profesional.nombre} ${profesional.apellido}?`
+    const mensaje =
+      nuevoEstado
+        ? `¿Querés activar a ${profesional.nombre} ${profesional.apellido}?`
+        : `¿Querés desactivar a ${profesional.nombre} ${profesional.apellido}?`
 
-    const confirmado = window.confirm(mensaje)
+    const confirmado =
+      window.confirm(mensaje)
 
     if (!confirmado) {
       return
     }
 
     try {
-      setCambiandoEstadoId(profesional._id)
+      setCambiandoEstadoId(
+        profesional._id
+      )
 
       await api.patch(
         `/profesionales/${profesional._id}/status`,
@@ -130,104 +198,212 @@ export default function ProfesionalesPage() {
 
   if (loading) {
     return (
-      <main>
-        <p>Cargando profesionales...</p>
+      <main className="professionals-page">
+        <p>
+          Cargando profesionales...
+        </p>
       </main>
     )
   }
 
   if (error) {
     return (
-      <main>
-        <h1>Profesionales</h1>
+      <main className="professionals-page">
+        <h1>
+          Profesionales
+        </h1>
 
-        <p>{error}</p>
+        <p>
+          {error}
+        </p>
       </main>
     )
   }
 
   return (
-    <main>
-      <h1>Profesionales</h1>
+    <main className="professionals-page">
 
-      <p>
-        Administrá los profesionales registrados en el sistema.
-      </p>
+      <section className="professionals-header">
 
-      {!mostrarFormulario && !profesionalEditando && (
-        <button
-          type="button"
-          onClick={() => setMostrarFormulario(true)}
-        >
-          + Nuevo profesional
-        </button>
-      )}
+        <div>
+          <p className="professionals-eyebrow">
+            Administración
+          </p>
+
+          <h1>
+            Profesionales
+          </h1>
+
+          <p>
+            Administrá las cuentas
+            y el acceso de los profesionales.
+          </p>
+        </div>
+
+        {!mostrarFormulario &&
+          !profesionalEditando && (
+            <button
+              type="button"
+              className="professionals-new-button"
+              onClick={() =>
+                setMostrarFormulario(true)
+              }
+            >
+              + Nuevo profesional
+            </button>
+          )}
+
+      </section>
 
       {mostrarFormulario && (
-        <CrearProfesionalForm
-          onCreated={handleProfesionalCreado}
-          onCancel={handleCancelarFormulario}
-        />
+        <section className="card professionals-form-card">
+          <CrearProfesionalForm
+            onCreated={handleProfesionalCreado}
+            onCancel={handleCancelarFormulario}
+          />
+        </section>
       )}
 
       {profesionalEditando && (
-        <EditarProfesionalForm
-          profesional={profesionalEditando}
-          onUpdated={handleProfesionalActualizado}
-          onCancel={handleCancelarEdicion}
-        />
+        <section className="card professionals-form-card">
+          <EditarProfesionalForm
+            profesional={profesionalEditando}
+            onUpdated={handleProfesionalActualizado}
+            onCancel={handleCancelarEdicion}
+          />
+        </section>
       )}
 
-      <section>
-        <h2>
-          Profesionales registrados
-        </h2>
+      <section className="professionals-toolbar">
 
-        {profesionales.length === 0 ? (
+        <div className="professionals-search">
+          <span>
+            ⌕
+          </span>
+
+          <input
+            type="search"
+            value={busqueda}
+            onChange={(event) =>
+              setBusqueda(
+                event.target.value
+              )
+            }
+            placeholder="Buscar por nombre, profesión o email..."
+          />
+        </div>
+
+        <span className="professionals-count">
+          {profesionalesFiltrados.length}{' '}
+          {profesionalesFiltrados.length === 1
+            ? 'profesional'
+            : 'profesionales'}
+        </span>
+
+      </section>
+
+      {profesionalesFiltrados.length === 0 ? (
+        <section className="professionals-empty">
+
+          <div className="professionals-empty-icon">
+            ♙
+          </div>
+
+          <h2>
+            No encontramos profesionales
+          </h2>
+
           <p>
-            No hay profesionales registrados.
+            Probá con otra búsqueda
+            o agregá un profesional nuevo.
           </p>
-        ) : (
-          <div>
-            {profesionales.map((profesional) => (
-              <article key={profesional._id}>
 
-                <h3>
-                  {profesional.nombre}{' '}
-                  {profesional.apellido}
-                </h3>
+        </section>
+      ) : (
+        <section className="professionals-grid">
 
-                <p>
-                  Profesión:{' '}
-                  {profesional.profesion}
-                </p>
+          {profesionalesFiltrados.map(
+            (profesional) => (
+              <article
+                key={profesional._id}
+                className="professional-card"
+              >
 
-                <p>
-                  Teléfono:{' '}
-                  {profesional.telefono ||
-                    'Sin teléfono'}
-                </p>
+                <div className="professional-card-header">
 
-                <p>
-                  Email:{' '}
-                  {profesional.user?.email ||
-                    'Sin email'}
-                </p>
+                  <div className="professional-avatar">
+                    {profesional.nombre
+                      ?.charAt(0)
+                      ?.toUpperCase()}
 
-                <p>
-                  Estado:{' '}
-                  <strong>
+                    {profesional.apellido
+                      ?.charAt(0)
+                      ?.toUpperCase()}
+                  </div>
+
+                  <span
+                    className={
+                      profesional.activo
+                        ? 'professional-status active'
+                        : 'professional-status inactive'
+                    }
+                  >
                     {profesional.activo
                       ? 'Activo'
                       : 'Inactivo'}
-                  </strong>
-                </p>
+                  </span>
 
-                <div>
+                </div>
+
+                <div className="professional-card-body">
+
+                  <h2>
+                    {profesional.nombre}{' '}
+                    {profesional.apellido}
+                  </h2>
+
+                  <span className="professional-role">
+                    {profesional.profesion ||
+                      'Profesión sin especificar'}
+                  </span>
+
+                  <div className="professional-info">
+
+                    <div>
+                      <span>
+                        Email
+                      </span>
+
+                      <strong>
+                        {profesional.user?.email ||
+                          'Sin email'}
+                      </strong>
+                    </div>
+
+                    <div>
+                      <span>
+                        Teléfono
+                      </span>
+
+                      <strong>
+                        {profesional.telefono ||
+                          'Sin teléfono'}
+                      </strong>
+                    </div>
+
+                  </div>
+
+                </div>
+
+                <div className="professional-actions">
+
                   <button
                     type="button"
+                    className="professional-edit"
                     onClick={() =>
-                      handleEditar(profesional)
+                      handleEditar(
+                        profesional
+                      )
                     }
                   >
                     Editar
@@ -235,27 +411,38 @@ export default function ProfesionalesPage() {
 
                   <button
                     type="button"
+                    className={
+                      profesional.activo
+                        ? 'professional-state danger'
+                        : 'professional-state success'
+                    }
                     onClick={() =>
-                      handleCambiarEstado(profesional)
+                      handleCambiarEstado(
+                        profesional
+                      )
                     }
                     disabled={
-                      cambiandoEstadoId === profesional._id
+                      cambiandoEstadoId ===
+                      profesional._id
                     }
                   >
-                    {cambiandoEstadoId === profesional._id
+                    {cambiandoEstadoId ===
+                    profesional._id
                       ? 'Guardando...'
                       : profesional.activo
-                        ? 'Desactivar'
-                        : 'Activar'
-                    }
+                      ? 'Desactivar'
+                      : 'Activar'}
                   </button>
+
                 </div>
 
               </article>
-            ))}
-          </div>
-        )}
-      </section>
+            )
+          )}
+
+        </section>
+      )}
+
     </main>
   )
 }

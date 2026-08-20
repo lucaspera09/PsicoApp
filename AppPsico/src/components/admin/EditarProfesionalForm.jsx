@@ -42,8 +42,14 @@ export default function EditarProfesionalForm({
         form
       )
 
+      const profesionalActualizado =
+        response.data?.data ||
+        response.data
+
       if (onUpdated) {
-        onUpdated(response.data)
+        onUpdated(
+          profesionalActualizado
+        )
       }
     } catch (error) {
       console.error(
@@ -61,77 +67,113 @@ export default function EditarProfesionalForm({
   }
 
   return (
-    <section>
-      <h2>Editar profesional</h2>
+    <section className="professional-form-section">
 
-      <form onSubmit={handleSubmit}>
+      <div className="professional-form-header">
 
         <div>
-          <label htmlFor="editar-nombre">
-            Nombre
-          </label>
+          <p className="professional-form-eyebrow">
+            Editando cuenta
+          </p>
 
-          <input
-            id="editar-nombre"
-            name="nombre"
-            type="text"
-            value={form.nombre}
-            onChange={handleChange}
-            required
-          />
+          <h2>
+            Editar profesional
+          </h2>
+
+          <p>
+            Actualizá los datos del profesional.
+          </p>
         </div>
 
-        <div>
-          <label htmlFor="editar-apellido">
-            Apellido
-          </label>
+      </div>
 
-          <input
-            id="editar-apellido"
-            name="apellido"
-            type="text"
-            value={form.apellido}
-            onChange={handleChange}
-            required
-          />
-        </div>
+      <form
+        onSubmit={handleSubmit}
+        className="professional-form"
+      >
 
-        <div>
-          <label htmlFor="editar-profesion">
-            Profesión
-          </label>
+        <div className="professional-form-grid">
 
-          <input
-            id="editar-profesion"
-            name="profesion"
-            type="text"
-            value={form.profesion}
-            onChange={handleChange}
-            required
-          />
-        </div>
+          <div className="form-group">
+            <label htmlFor="editar-nombre">
+              Nombre
+            </label>
 
-        <div>
-          <label htmlFor="editar-telefono">
-            Teléfono
-          </label>
+            <input
+              id="editar-nombre"
+              name="nombre"
+              type="text"
+              value={form.nombre}
+              onChange={handleChange}
+              className="form-control"
+              placeholder="Ej: Paula"
+              required
+            />
+          </div>
 
-          <input
-            id="editar-telefono"
-            name="telefono"
-            type="text"
-            value={form.telefono}
-            onChange={handleChange}
-          />
+          <div className="form-group">
+            <label htmlFor="editar-apellido">
+              Apellido
+            </label>
+
+            <input
+              id="editar-apellido"
+              name="apellido"
+              type="text"
+              value={form.apellido}
+              onChange={handleChange}
+              className="form-control"
+              placeholder="Ej: Pérez"
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="editar-profesion">
+              Profesión
+            </label>
+
+            <input
+              id="editar-profesion"
+              name="profesion"
+              type="text"
+              value={form.profesion}
+              onChange={handleChange}
+              className="form-control"
+              placeholder="Ej: Psicomotricista"
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="editar-telefono">
+              Teléfono
+            </label>
+
+            <input
+              id="editar-telefono"
+              name="telefono"
+              type="text"
+              value={form.telefono}
+              onChange={handleChange}
+              className="form-control"
+              placeholder="Ej: 099 123 456"
+            />
+          </div>
+
         </div>
 
         {error && (
-          <p>{error}</p>
+          <div className="professional-form-error">
+            {error}
+          </div>
         )}
 
-        <div>
+        <div className="professional-form-actions">
+
           <button
             type="submit"
+            className="btn btn-primary"
             disabled={loading}
           >
             {loading
@@ -141,14 +183,17 @@ export default function EditarProfesionalForm({
 
           <button
             type="button"
+            className="btn btn-secondary"
             onClick={onCancel}
             disabled={loading}
           >
             Cancelar
           </button>
+
         </div>
 
       </form>
+
     </section>
   )
 }

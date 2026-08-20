@@ -20,7 +20,10 @@ export default function EditarNotaForm({
   const [error, setError] = useState(null)
 
   const handleChange = (event) => {
-    const { name, value } = event.target
+    const {
+      name,
+      value
+    } = event.target
 
     setForm((prev) => ({
       ...prev,
@@ -50,10 +53,13 @@ export default function EditarNotaForm({
       )
 
       const notaActualizada =
-        response.data?.data || response.data
+        response.data?.data ||
+        response.data
 
       if (onUpdated) {
-        onUpdated(notaActualizada)
+        onUpdated(
+          notaActualizada
+        )
       }
     } catch (error) {
       console.error(
@@ -71,80 +77,116 @@ export default function EditarNotaForm({
   }
 
   return (
-    <section>
-      <h3>Editar nota</h3>
+    <section className="note-form-section">
 
-      <form onSubmit={handleSubmit}>
+      <div className="note-form-header">
 
         <div>
-          <label htmlFor="editar-nota-titulo">
-            Título
-          </label>
+          <p className="note-form-eyebrow">
+            Seguimiento
+          </p>
 
-          <input
-            id="editar-nota-titulo"
-            name="titulo"
-            type="text"
-            value={form.titulo}
-            onChange={handleChange}
-            required
-          />
+          <h3>
+            Editar nota
+          </h3>
+
+          <p>
+            Modificá la información
+            registrada en esta nota.
+          </p>
         </div>
 
-        <div>
-          <label htmlFor="editar-nota-tipo">
-            Tipo
-          </label>
+      </div>
 
-          <select
-            id="editar-nota-tipo"
-            name="tipo"
-            value={form.tipo}
-            onChange={handleChange}
-            required
-          >
-            <option value="entrevista">
-              Entrevista
-            </option>
+      <form
+        onSubmit={handleSubmit}
+        className="note-form"
+      >
 
-            <option value="llamada">
-              Llamada
-            </option>
+        <div className="note-form-grid">
 
-            <option value="comentario_padres">
-              Comentario de padres
-            </option>
+          <div className="form-group note-form-title">
 
-            <option value="reunion">
-              Reunión
-            </option>
+            <label htmlFor="editar-nota-titulo">
+              Título
+            </label>
 
-            <option value="observacion">
-              Observación
-            </option>
+            <input
+              id="editar-nota-titulo"
+              name="titulo"
+              type="text"
+              value={form.titulo}
+              onChange={handleChange}
+              className="form-control"
+              placeholder="Ej: Entrevista con la madre"
+              required
+            />
 
-            <option value="otro">
-              Otro
-            </option>
-          </select>
+          </div>
+
+          <div className="form-group">
+
+            <label htmlFor="editar-nota-tipo">
+              Tipo
+            </label>
+
+            <select
+              id="editar-nota-tipo"
+              name="tipo"
+              value={form.tipo}
+              onChange={handleChange}
+              className="form-control"
+              required
+            >
+              <option value="entrevista">
+                Entrevista
+              </option>
+
+              <option value="llamada">
+                Llamada
+              </option>
+
+              <option value="comentario_padres">
+                Comentario de padres
+              </option>
+
+              <option value="reunion">
+                Reunión
+              </option>
+
+              <option value="observacion">
+                Observación
+              </option>
+
+              <option value="otro">
+                Otro
+              </option>
+            </select>
+
+          </div>
+
+          <div className="form-group">
+
+            <label htmlFor="editar-nota-fecha">
+              Fecha
+            </label>
+
+            <input
+              id="editar-nota-fecha"
+              name="fecha"
+              type="date"
+              value={form.fecha}
+              onChange={handleChange}
+              className="form-control"
+              required
+            />
+
+          </div>
+
         </div>
 
-        <div>
-          <label htmlFor="editar-nota-fecha">
-            Fecha
-          </label>
+        <div className="form-group">
 
-          <input
-            id="editar-nota-fecha"
-            name="fecha"
-            type="date"
-            value={form.fecha}
-            onChange={handleChange}
-            required
-          />
-        </div>
-
-        <div>
           <label htmlFor="editar-nota-contenido">
             Contenido
           </label>
@@ -154,35 +196,45 @@ export default function EditarNotaForm({
             name="contenido"
             value={form.contenido}
             onChange={handleChange}
+            className="form-control note-form-textarea"
             rows="6"
+            placeholder="Escribí acá la información relevante..."
             required
           />
+
         </div>
 
         {error && (
-          <p>{error}</p>
+          <div className="note-form-error">
+            {error}
+          </div>
         )}
 
-        <button
-          type="submit"
-          disabled={loading}
-        >
-          {loading
-            ? 'Guardando...'
-            : 'Guardar cambios'}
-        </button>
+        <div className="note-form-actions">
 
-        {' '}
+          <button
+            type="submit"
+            className="btn btn-primary"
+            disabled={loading}
+          >
+            {loading
+              ? 'Guardando...'
+              : 'Guardar cambios'}
+          </button>
 
-        <button
-          type="button"
-          onClick={onCancel}
-          disabled={loading}
-        >
-          Cancelar
-        </button>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={onCancel}
+            disabled={loading}
+          >
+            Cancelar
+          </button>
+
+        </div>
 
       </form>
+
     </section>
   )
 }

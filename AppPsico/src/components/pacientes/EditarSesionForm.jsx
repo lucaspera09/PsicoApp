@@ -2,6 +2,19 @@ import { useState } from 'react'
 
 import api from '../../api/api.js'
 
+const AREAS_FRECUENTES = [
+  'Coordinación',
+  'Equilibrio',
+  'Motricidad fina',
+  'Motricidad gruesa',
+  'Atención',
+  'Juego',
+  'Lenguaje',
+  'Esquema corporal',
+  'Organización espacial',
+  'Organización temporal'
+]
+
 export default function EditarSesionForm({
   sesion,
   onUpdated,
@@ -11,17 +24,39 @@ export default function EditarSesionForm({
     fecha: sesion.fecha
       ? sesion.fecha.substring(0, 10)
       : '',
-    areas: sesion.areas?.join(', ') || '',
-    actividades: sesion.actividades?.join(', ') || '',
-    observacion: sesion.observacion || '',
-    proximaSesion: sesion.proximaSesion || ''
+
+    areas:
+      Array.isArray(sesion.areas)
+        ? sesion.areas
+        : [],
+
+    actividades:
+      sesion.actividades?.join(', ') ||
+      '',
+
+    observacion:
+      sesion.observacion || '',
+
+    proximaSesion:
+      sesion.proximaSesion || ''
   })
 
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
+  const [
+    areaPersonalizada,
+    setAreaPersonalizada
+  ] = useState('')
+
+  const [loading, setLoading] =
+    useState(false)
+
+  const [error, setError] =
+    useState(null)
 
   const handleChange = (event) => {
-    const { name, value } = event.target
+    const {
+      name,
+      value
+    } = event.target
 
     setForm((prev) => ({
       ...prev,
@@ -33,39 +68,116 @@ export default function EditarSesionForm({
     }
   }
 
-  const convertirALista = (texto) => {
+  const toggleArea = (area) => {
+    setForm((prev) => {
+      const seleccionada =
+        prev.areas.includes(area)
+
+      return {
+        ...prev,
+
+        areas: seleccionada
+          ? prev.areas.filter(
+              (item) =>
+                item !== area
+            )
+          : [
+              ...prev.areas,
+              area
+            ]
+      }
+    })
+
+    if (error) {
+      setError(null)
+    }
+  }
+
+  const agregarAreaPersonalizada = () => {
+    const area =
+      areaPersonalizada.trim()
+
+    if (!area) {
+      return
+    }
+
+    setForm((prev) => {
+      const yaExiste =
+        prev.areas.some(
+          (item) =>
+            item.toLowerCase() ===
+            area.toLowerCase()
+        )
+
+      if (yaExiste) {
+        return prev
+      }
+
+      return {
+        ...prev,
+
+        areas: [
+          ...prev.areas,
+          area
+        ]
+      }
+    })
+
+    setAreaPersonalizada('')
+  }
+
+  const convertirALista = (
+    texto
+  ) => {
     return texto
       .split(',')
-      .map((item) => item.trim())
+      .map(
+        (item) =>
+          item.trim()
+      )
       .filter(Boolean)
   }
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = async (
+    event
+  ) => {
     event.preventDefault()
 
     try {
       setLoading(true)
       setError(null)
 
-      const response = await api.put(
-        `/sesiones/${sesion._id}`,
-        {
-          fecha: form.fecha,
-          areas: convertirALista(form.areas),
-          actividades: convertirALista(
-            form.actividades
-          ),
-          observacion: form.observacion.trim(),
-          proximaSesion:
-            form.proximaSesion.trim()
-        }
-      )
+      const response =
+        await api.put(
+          `/sesiones/${sesion._id}`,
+          {
+            fecha:
+              form.fecha,
+
+            areas:
+              form.areas,
+
+            actividades:
+              convertirALista(
+                form.actividades
+              ),
+
+            observacion:
+              form.observacion.trim(),
+
+            proximaSesion:
+              form.proximaSesion.trim()
+          }
+        )
 
       const sesionActualizada =
-        response.data?.data || response.data
+        response.data?.data ||
+        response.data
 
       if (onUpdated) {
-        onUpdated(sesionActualizada)
+        onUpdated(
+          sesionActualizada
+        )
       }
     } catch (error) {
       console.error(
@@ -83,12 +195,36 @@ export default function EditarSesionForm({
   }
 
   return (
-    <section>
-      <h3>Editar sesión</h3>
+    <section className="session-form-section">
 
-      <form onSubmit={handleSubmit}>
+      <div className="session-form-header">
 
         <div>
+          <p className="session-form-eyebrow">
+            Registro clínico
+          </p>
+
+          <h3>
+            Editar sesión
+          </h3>
+
+          <p>
+            Modificá la información
+            registrada para esta sesión.
+          </p>
+        </div>
+
+      </div>
+
+      <form
+        onSubmit={handleSubmit}
+        className="session-form"
+      >
+
+        {/* FECHA */}
+
+        <div className="form-group">
+
           <label htmlFor="editar-sesion-fecha">
             Fecha
           </label>
@@ -99,63 +235,197 @@ export default function EditarSesionForm({
             type="date"
             value={form.fecha}
             onChange={handleChange}
+            className="form-control"
             required
           />
+
         </div>
 
-        <div>
-          <label htmlFor="editar-sesion-areas">
-            Áreas trabajadas
-          </label>
+        {/* ÁREAS */}
 
-          <input
-            id="editar-sesion-areas"
-            name="areas"
-            type="text"
-            value={form.areas}
-            onChange={handleChange}
-            placeholder="coordinación, equilibrio, motricidad fina"
-          />
+        <div className="session-form-block">
 
-          <small>
-            Separalas con comas.
-          </small>
+          <div className="session-form-block-header">
+
+            <div>
+              <label>
+                Áreas trabajadas
+              </label>
+
+              <p>
+                Seleccioná o quitá
+                las áreas trabajadas.
+              </p>
+            </div>
+
+            <span className="session-form-count">
+              {form.areas.length}{' '}
+              seleccionadas
+            </span>
+
+          </div>
+
+          <div className="session-area-grid">
+
+            {AREAS_FRECUENTES.map(
+              (area) => {
+                const seleccionada =
+                  form.areas.includes(
+                    area
+                  )
+
+                return (
+                  <button
+                    key={area}
+                    type="button"
+                    className={
+                      seleccionada
+                        ? 'session-area-chip selected'
+                        : 'session-area-chip'
+                    }
+                    onClick={() =>
+                      toggleArea(
+                        area
+                      )
+                    }
+                  >
+
+                    {seleccionada && (
+                      <span>
+                        ✓
+                      </span>
+                    )}
+
+                    {area}
+
+                  </button>
+                )
+              }
+            )}
+
+          </div>
+
+          <div className="session-custom-area">
+
+            <input
+              type="text"
+              value={
+                areaPersonalizada
+              }
+              onChange={(event) =>
+                setAreaPersonalizada(
+                  event.target.value
+                )
+              }
+              className="form-control"
+              placeholder="Otra área..."
+              onKeyDown={(event) => {
+                if (
+                  event.key ===
+                  'Enter'
+                ) {
+                  event.preventDefault()
+
+                  agregarAreaPersonalizada()
+                }
+              }}
+            />
+
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={
+                agregarAreaPersonalizada
+              }
+            >
+              Agregar
+            </button>
+
+          </div>
+
+          {form.areas.length > 0 && (
+            <div className="session-selected-areas">
+
+              {form.areas.map(
+                (area) => (
+                  <span key={area}>
+
+                    {area}
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        toggleArea(
+                          area
+                        )
+                      }
+                      aria-label={`Quitar ${area}`}
+                    >
+                      ×
+                    </button>
+
+                  </span>
+                )
+              )}
+
+            </div>
+          )}
+
         </div>
 
-        <div>
+        {/* ACTIVIDADES */}
+
+        <div className="form-group">
+
           <label htmlFor="editar-sesion-actividades">
-            Actividades
+            Actividades realizadas
           </label>
 
           <input
             id="editar-sesion-actividades"
             name="actividades"
             type="text"
-            value={form.actividades}
+            value={
+              form.actividades
+            }
             onChange={handleChange}
-            placeholder="circuito motor, juego con pelota"
+            className="form-control"
+            placeholder="Ej: circuito motor, juego con pelota"
           />
 
           <small>
-            Separalas con comas.
+            Si cargás varias,
+            separalas con comas.
           </small>
+
         </div>
 
-        <div>
+        {/* OBSERVACIÓN */}
+
+        <div className="form-group">
+
           <label htmlFor="editar-sesion-observacion">
-            Observación
+            Observación de la sesión
           </label>
 
           <textarea
             id="editar-sesion-observacion"
             name="observacion"
-            value={form.observacion}
+            value={
+              form.observacion
+            }
             onChange={handleChange}
+            className="form-control session-form-textarea"
             rows="5"
+            placeholder="¿Cómo fue la sesión?"
           />
+
         </div>
 
-        <div>
+        {/* PRÓXIMA */}
+
+        <div className="form-group session-next-field">
+
           <label htmlFor="editar-sesion-proxima">
             Para la próxima sesión
           </label>
@@ -163,36 +433,48 @@ export default function EditarSesionForm({
           <textarea
             id="editar-sesion-proxima"
             name="proximaSesion"
-            value={form.proximaSesion}
+            value={
+              form.proximaSesion
+            }
             onChange={handleChange}
+            className="form-control session-form-textarea small"
             rows="3"
+            placeholder="Ej: continuar trabajando equilibrio"
           />
+
         </div>
 
         {error && (
-          <p>{error}</p>
+          <div className="session-form-error">
+            {error}
+          </div>
         )}
 
-        <button
-          type="submit"
-          disabled={loading}
-        >
-          {loading
-            ? 'Guardando...'
-            : 'Guardar cambios'}
-        </button>
+        <div className="session-form-actions">
 
-        {' '}
+          <button
+            type="submit"
+            className="btn btn-primary session-save-button"
+            disabled={loading}
+          >
+            {loading
+              ? 'Guardando...'
+              : 'Guardar cambios'}
+          </button>
 
-        <button
-          type="button"
-          onClick={onCancel}
-          disabled={loading}
-        >
-          Cancelar
-        </button>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={onCancel}
+            disabled={loading}
+          >
+            Cancelar
+          </button>
+
+        </div>
 
       </form>
+
     </section>
   )
 }

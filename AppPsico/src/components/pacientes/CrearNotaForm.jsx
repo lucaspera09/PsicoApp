@@ -7,7 +7,9 @@ export default function CrearNotaForm({
   onCreated,
   onCancel
 }) {
-  const hoy = new Date().toISOString().split('T')[0]
+  const hoy = new Date()
+    .toISOString()
+    .split('T')[0]
 
   const [form, setForm] = useState({
     titulo: '',
@@ -20,7 +22,10 @@ export default function CrearNotaForm({
   const [error, setError] = useState(null)
 
   const handleChange = (event) => {
-    const { name, value } = event.target
+    const {
+      name,
+      value
+    } = event.target
 
     setForm((prev) => ({
       ...prev,
@@ -51,12 +56,12 @@ export default function CrearNotaForm({
       )
 
       const nuevaNota =
-        response.data?.data || response.data
+        response.data?.data ||
+        response.data
 
       if (onCreated) {
         onCreated(nuevaNota)
       }
-
     } catch (error) {
       console.error(
         'Error al crear nota:',
@@ -73,81 +78,116 @@ export default function CrearNotaForm({
   }
 
   return (
-    <section>
-      <h3>Nueva nota</h3>
+    <section className="note-form-section">
 
-      <form onSubmit={handleSubmit}>
+      <div className="note-form-header">
 
         <div>
-          <label htmlFor="nota-titulo">
-            Título
-          </label>
+          <p className="note-form-eyebrow">
+            Seguimiento
+          </p>
 
-          <input
-            id="nota-titulo"
-            name="titulo"
-            type="text"
-            value={form.titulo}
-            onChange={handleChange}
-            placeholder="Ej: Entrevista con la madre"
-            required
-          />
+          <h3>
+            Nueva nota
+          </h3>
+
+          <p>
+            Registrá entrevistas, llamadas,
+            reuniones u observaciones relevantes.
+          </p>
         </div>
 
-        <div>
-          <label htmlFor="nota-tipo">
-            Tipo
-          </label>
+      </div>
 
-          <select
-            id="nota-tipo"
-            name="tipo"
-            value={form.tipo}
-            onChange={handleChange}
-            required
-          >
-            <option value="entrevista">
-              Entrevista
-            </option>
+      <form
+        onSubmit={handleSubmit}
+        className="note-form"
+      >
 
-            <option value="llamada">
-              Llamada
-            </option>
+        <div className="note-form-grid">
 
-            <option value="comentario_padres">
-              Comentario de padres
-            </option>
+          <div className="form-group note-form-title">
 
-            <option value="reunion">
-              Reunión
-            </option>
+            <label htmlFor="nota-titulo">
+              Título
+            </label>
 
-            <option value="observacion">
-              Observación
-            </option>
+            <input
+              id="nota-titulo"
+              name="titulo"
+              type="text"
+              value={form.titulo}
+              onChange={handleChange}
+              className="form-control"
+              placeholder="Ej: Entrevista con la madre"
+              required
+            />
 
-            <option value="otro">
-              Otro
-            </option>
-          </select>
+          </div>
+
+          <div className="form-group">
+
+            <label htmlFor="nota-tipo">
+              Tipo
+            </label>
+
+            <select
+              id="nota-tipo"
+              name="tipo"
+              value={form.tipo}
+              onChange={handleChange}
+              className="form-control"
+              required
+            >
+              <option value="entrevista">
+                Entrevista
+              </option>
+
+              <option value="llamada">
+                Llamada
+              </option>
+
+              <option value="comentario_padres">
+                Comentario de padres
+              </option>
+
+              <option value="reunion">
+                Reunión
+              </option>
+
+              <option value="observacion">
+                Observación
+              </option>
+
+              <option value="otro">
+                Otro
+              </option>
+            </select>
+
+          </div>
+
+          <div className="form-group">
+
+            <label htmlFor="nota-fecha">
+              Fecha
+            </label>
+
+            <input
+              id="nota-fecha"
+              name="fecha"
+              type="date"
+              value={form.fecha}
+              onChange={handleChange}
+              className="form-control"
+              required
+            />
+
+          </div>
+
         </div>
 
-        <div>
-          <label htmlFor="nota-fecha">
-            Fecha
-          </label>
+        <div className="form-group">
 
-          <input
-            id="nota-fecha"
-            name="fecha"
-            type="date"
-            value={form.fecha}
-            onChange={handleChange}
-            required
-          />
-        </div>
-
-        <div>
           <label htmlFor="nota-contenido">
             Contenido
           </label>
@@ -157,19 +197,25 @@ export default function CrearNotaForm({
             name="contenido"
             value={form.contenido}
             onChange={handleChange}
+            className="form-control note-form-textarea"
             rows="6"
             placeholder="Escribí acá la información relevante..."
             required
           />
+
         </div>
 
         {error && (
-          <p>{error}</p>
+          <div className="note-form-error">
+            {error}
+          </div>
         )}
 
-        <div>
+        <div className="note-form-actions">
+
           <button
             type="submit"
+            className="btn btn-primary"
             disabled={loading}
           >
             {loading
@@ -179,14 +225,17 @@ export default function CrearNotaForm({
 
           <button
             type="button"
+            className="btn btn-secondary"
             onClick={onCancel}
             disabled={loading}
           >
             Cancelar
           </button>
+
         </div>
 
       </form>
+
     </section>
   )
 }

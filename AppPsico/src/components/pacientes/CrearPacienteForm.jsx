@@ -17,7 +17,10 @@ export default function CrearPacienteForm({
   const [error, setError] = useState(null)
 
   const handleChange = (event) => {
-    const { name, value } = event.target
+    const {
+      name,
+      value
+    } = event.target
 
     setForm((prev) => ({
       ...prev,
@@ -41,13 +44,16 @@ export default function CrearPacienteForm({
         {
           nombre: form.nombre.trim(),
           apellido: form.apellido.trim(),
-          fechaNacimiento: form.fechaNacimiento,
-          documento: form.documento.trim()
+          fechaNacimiento:
+            form.fechaNacimiento,
+          documento:
+            form.documento.trim()
         }
       )
 
       const nuevoPaciente =
-        response.data?.data || response.data
+        response.data?.data ||
+        response.data
 
       if (onCreated) {
         onCreated(nuevoPaciente)
@@ -75,78 +81,113 @@ export default function CrearPacienteForm({
   }
 
   return (
-    <section>
-      <h2>Nuevo paciente</h2>
+    <section className="patient-form-section">
 
-      <form onSubmit={handleSubmit}>
+      <div className="patient-form-header">
 
         <div>
-          <label htmlFor="nombre">
-            Nombre
-          </label>
+          <p className="patient-form-eyebrow">
+            Nueva ficha
+          </p>
 
-          <input
-            id="nombre"
-            name="nombre"
-            type="text"
-            value={form.nombre}
-            onChange={handleChange}
-            required
-          />
+          <h2>
+            Nuevo paciente
+          </h2>
+
+          <p>
+            Completá los datos básicos
+            para crear la ficha del paciente.
+          </p>
         </div>
 
-        <div>
-          <label htmlFor="apellido">
-            Apellido
-          </label>
+      </div>
 
-          <input
-            id="apellido"
-            name="apellido"
-            type="text"
-            value={form.apellido}
-            onChange={handleChange}
-            required
-          />
-        </div>
+      <form
+        onSubmit={handleSubmit}
+        className="patient-form"
+      >
 
-        <div>
-          <label htmlFor="fechaNacimiento">
-            Fecha de nacimiento
-          </label>
+        <div className="patient-form-grid">
 
-          <input
-            id="fechaNacimiento"
-            name="fechaNacimiento"
-            type="date"
-            value={form.fechaNacimiento}
-            onChange={handleChange}
-            required
-          />
-        </div>
+          <div className="form-group">
+            <label htmlFor="nombre">
+              Nombre
+            </label>
 
-        <div>
-          <label htmlFor="documento">
-            Documento
-          </label>
+            <input
+              id="nombre"
+              name="nombre"
+              type="text"
+              value={form.nombre}
+              onChange={handleChange}
+              className="form-control"
+              placeholder="Ej: Mateo"
+              required
+            />
+          </div>
 
-          <input
-            id="documento"
-            name="documento"
-            type="text"
-            value={form.documento}
-            onChange={handleChange}
-            placeholder="Ej: 5.123.456-7"
-          />
+          <div className="form-group">
+            <label htmlFor="apellido">
+              Apellido
+            </label>
+
+            <input
+              id="apellido"
+              name="apellido"
+              type="text"
+              value={form.apellido}
+              onChange={handleChange}
+              className="form-control"
+              placeholder="Ej: Rodríguez"
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="fechaNacimiento">
+              Fecha de nacimiento
+            </label>
+
+            <input
+              id="fechaNacimiento"
+              name="fechaNacimiento"
+              type="date"
+              value={form.fechaNacimiento}
+              onChange={handleChange}
+              className="form-control"
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="documento">
+              Documento
+            </label>
+
+            <input
+              id="documento"
+              name="documento"
+              type="text"
+              value={form.documento}
+              onChange={handleChange}
+              className="form-control"
+              placeholder="Ej: 5.123.456-7"
+            />
+          </div>
+
         </div>
 
         {error && (
-          <p>{error}</p>
+          <div className="patient-form-error">
+            {error}
+          </div>
         )}
 
-        <div>
+        <div className="patient-form-actions">
+
           <button
             type="submit"
+            className="btn btn-primary"
             disabled={loading}
           >
             {loading
@@ -156,14 +197,17 @@ export default function CrearPacienteForm({
 
           <button
             type="button"
+            className="btn btn-secondary"
             onClick={onCancel}
             disabled={loading}
           >
             Cancelar
           </button>
+
         </div>
 
       </form>
+
     </section>
   )
 }

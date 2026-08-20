@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router'
 
-
 import api from '../api/api.js'
+
 import ResponsablesPaciente from '../components/pacientes/ResponsablesPaciente.jsx'
 import NotasPaciente from '../components/pacientes/NotasPaciente.jsx'
 import PlanesTrabajoPaciente from '../components/pacientes/PlanesTrabajoPaciente.jsx'
@@ -11,9 +11,20 @@ import SesionesPaciente from '../components/pacientes/SesionesPaciente.jsx'
 export default function PacienteDetallePage() {
   const { id } = useParams()
 
-  const [paciente, setPaciente] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const [
+    paciente,
+    setPaciente
+  ] = useState(null)
+
+  const [
+    loading,
+    setLoading
+  ] = useState(true)
+
+  const [
+    error,
+    setError
+  ] = useState(null)
 
   useEffect(() => {
     const cargarPaciente = async () => {
@@ -21,14 +32,18 @@ export default function PacienteDetallePage() {
         setLoading(true)
         setError(null)
 
-        const response = await api.get(
-          `/pacientes/${id}`
-        )
+        const response =
+          await api.get(
+            `/pacientes/${id}`
+          )
 
         const pacienteRecibido =
-          response.data?.data || response.data
+          response.data?.data ||
+          response.data
 
-        setPaciente(pacienteRecibido)
+        setPaciente(
+          pacienteRecibido
+        )
       } catch (error) {
         console.error(
           'Error al cargar paciente:',
@@ -47,25 +62,35 @@ export default function PacienteDetallePage() {
     cargarPaciente()
   }, [id])
 
-  const calcularEdad = (fechaNacimiento) => {
+  const calcularEdad = (
+    fechaNacimiento
+  ) => {
     if (!fechaNacimiento) {
       return null
     }
 
-    const nacimiento = new Date(fechaNacimiento)
-    const hoy = new Date()
+    const nacimiento =
+      new Date(
+        fechaNacimiento
+      )
+
+    const hoy =
+      new Date()
 
     let edad =
-      hoy.getFullYear() - nacimiento.getFullYear()
+      hoy.getFullYear() -
+      nacimiento.getFullYear()
 
     const diferenciaMes =
-      hoy.getMonth() - nacimiento.getMonth()
+      hoy.getMonth() -
+      nacimiento.getMonth()
 
     if (
       diferenciaMes < 0 ||
       (
         diferenciaMes === 0 &&
-        hoy.getDate() < nacimiento.getDate()
+        hoy.getDate() <
+          nacimiento.getDate()
       )
     ) {
       edad--
@@ -74,172 +99,427 @@ export default function PacienteDetallePage() {
     return edad
   }
 
+  const formatearFecha = (
+    fecha
+  ) => {
+    if (!fecha) {
+      return 'Sin fecha'
+    }
+
+    return new Date(
+      fecha
+    ).toLocaleDateString(
+      'es-UY'
+    )
+  }
+
+  const mostrarLista = (
+    lista,
+    vacio
+  ) => {
+    if (
+      !Array.isArray(lista) ||
+      lista.length === 0
+    ) {
+      return vacio
+    }
+
+    return lista.join(', ')
+  }
+
   if (loading) {
     return (
-      <main>
-        <p>Cargando ficha del paciente...</p>
+      <main className="patient-detail-page">
+        <p>
+          Cargando ficha del paciente...
+        </p>
       </main>
     )
   }
 
   if (error) {
     return (
-      <main>
-        <h1>Ficha del paciente</h1>
+      <main className="patient-detail-page">
 
-        <p>{error}</p>
-
-        <Link to="/pacientes">
-          Volver a pacientes
+        <Link
+          to="/pacientes"
+          className="patient-detail-back"
+        >
+          ← Volver a pacientes
         </Link>
+
+        <div className="patient-detail-error">
+          <h1>
+            Ficha del paciente
+          </h1>
+
+          <p>
+            {error}
+          </p>
+        </div>
+
       </main>
     )
   }
 
   if (!paciente) {
     return (
-      <main>
-        <p>Paciente no encontrado.</p>
+      <main className="patient-detail-page">
+        <p>
+          Paciente no encontrado.
+        </p>
       </main>
     )
   }
 
-  return (
-    <main>
+  const edad =
+    calcularEdad(
+      paciente.fechaNacimiento
+    )
 
-      <Link to="/pacientes">
+  const inicialNombre =
+    paciente.nombre
+      ?.charAt(0)
+      ?.toUpperCase() ||
+    ''
+
+  const inicialApellido =
+    paciente.apellido
+      ?.charAt(0)
+      ?.toUpperCase() ||
+    ''
+
+  return (
+    <main className="patient-detail-page">
+
+      {/* VOLVER */}
+
+      <Link
+        to="/pacientes"
+        className="patient-detail-back"
+      >
         ← Volver a pacientes
       </Link>
 
-      <h1>
-        {paciente.nombre}{' '}
-        {paciente.apellido}
-      </h1>
+      {/* HEADER */}
 
-      <p>
-        Estado:{' '}
-        <strong>
-          {paciente.activo
-            ? 'Activo'
-            : 'Inactivo'}
-        </strong>
-      </p>
+      <section className="patient-detail-header">
 
-      <section>
-        <h2>Datos personales</h2>
+        <div className="patient-detail-identity">
 
-        <p>
-          <strong>Nombre:</strong>{' '}
-          {paciente.nombre}
-        </p>
+          <div className="patient-detail-avatar">
+            {inicialNombre}
+            {inicialApellido}
+          </div>
 
-        <p>
-          <strong>Apellido:</strong>{' '}
-          {paciente.apellido}
-        </p>
+          <div>
+            <p className="patient-detail-eyebrow">
+              Ficha del paciente
+            </p>
 
-        <p>
-          <strong>Documento:</strong>{' '}
-          {paciente.documento ||
-            'Sin documento'}
-        </p>
+            <div className="patient-detail-title-row">
 
-        <p>
-          <strong>Fecha de nacimiento:</strong>{' '}
-          {paciente.fechaNacimiento
-            ? new Date(
+              <h1>
+                {paciente.nombre}{' '}
+                {paciente.apellido}
+              </h1>
+
+              <span
+                className={
+                  paciente.activo
+                    ? 'patient-detail-status active'
+                    : 'patient-detail-status inactive'
+                }
+              >
+                {paciente.activo
+                  ? 'Activo'
+                  : 'Inactivo'}
+              </span>
+
+            </div>
+
+            <p className="patient-detail-summary">
+              {edad !== null
+                ? `${edad} años`
+                : 'Edad no registrada'}
+
+              {' · '}
+
+              {paciente.documento
+                ? `Documento ${paciente.documento}`
+                : 'Sin documento'}
+            </p>
+          </div>
+
+        </div>
+
+      </section>
+
+      {/* RESUMEN */}
+
+      <section className="patient-detail-summary-grid">
+
+        <div className="patient-detail-summary-card">
+          <span>
+            Fecha de nacimiento
+          </span>
+
+          <strong>
+            {formatearFecha(
+              paciente.fechaNacimiento
+            )}
+          </strong>
+        </div>
+
+        <div className="patient-detail-summary-card">
+          <span>
+            Edad
+          </span>
+
+          <strong>
+            {edad !== null
+              ? `${edad} años`
+              : 'Sin fecha'}
+          </strong>
+        </div>
+
+        <div className="patient-detail-summary-card">
+          <span>
+            Fecha de ingreso
+          </span>
+
+          <strong>
+            {formatearFecha(
+              paciente.fechaIngreso
+            )}
+          </strong>
+        </div>
+
+      </section>
+
+      {/* DATOS PERSONALES */}
+
+      <section className="patient-detail-card">
+
+        <div className="patient-detail-section-header">
+          <div>
+            <p className="patient-detail-section-eyebrow">
+              Información general
+            </p>
+
+            <h2>
+              Datos personales
+            </h2>
+          </div>
+        </div>
+
+        <div className="patient-detail-data-grid">
+
+          <div className="patient-detail-data-item">
+            <span>
+              Nombre
+            </span>
+
+            <strong>
+              {paciente.nombre}
+            </strong>
+          </div>
+
+          <div className="patient-detail-data-item">
+            <span>
+              Apellido
+            </span>
+
+            <strong>
+              {paciente.apellido}
+            </strong>
+          </div>
+
+          <div className="patient-detail-data-item">
+            <span>
+              Documento
+            </span>
+
+            <strong>
+              {paciente.documento ||
+                'Sin documento'}
+            </strong>
+          </div>
+
+          <div className="patient-detail-data-item">
+            <span>
+              Nacimiento
+            </span>
+
+            <strong>
+              {formatearFecha(
                 paciente.fechaNacimiento
-              ).toLocaleDateString('es-UY')
-            : 'Sin fecha'
-          }
-        </p>
+              )}
+            </strong>
+          </div>
 
-        <p>
-          <strong>Edad:</strong>{' '}
-          {paciente.fechaNacimiento
-            ? `${calcularEdad(
-                paciente.fechaNacimiento
-              )} años`
-            : 'Sin fecha de nacimiento'
-          }
-        </p>
+          <div className="patient-detail-data-item">
+            <span>
+              Edad
+            </span>
 
-        <p>
-          <strong>Fecha de ingreso:</strong>{' '}
-          {paciente.fechaIngreso
-            ? new Date(
+            <strong>
+              {edad !== null
+                ? `${edad} años`
+                : 'Sin fecha'}
+            </strong>
+          </div>
+
+          <div className="patient-detail-data-item">
+            <span>
+              Ingreso
+            </span>
+
+            <strong>
+              {formatearFecha(
                 paciente.fechaIngreso
-              ).toLocaleDateString('es-UY')
-            : 'Sin fecha'
-          }
-        </p>
+              )}
+            </strong>
+          </div>
+
+        </div>
+
       </section>
 
-      <section>
-        <h2>Información clínica</h2>
+      {/* INFORMACIÓN CLÍNICA */}
 
-        <p>
-          <strong>Enfermedades:</strong>{' '}
-          {paciente.enfermedades?.length > 0
-            ? paciente.enfermedades.join(', ')
-            : 'Ninguna registrada'
-          }
-        </p>
+      <section className="patient-detail-card">
 
-        <p>
-          <strong>Alergias:</strong>{' '}
-          {paciente.alergias?.length > 0
-            ? paciente.alergias.join(', ')
-            : 'Ninguna registrada'
-          }
-        </p>
+        <div className="patient-detail-section-header">
+          <div>
+            <p className="patient-detail-section-eyebrow">
+              Historia clínica
+            </p>
 
-        <p>
-          <strong>Medicamentos:</strong>{' '}
-          {paciente.medicamentos?.length > 0
-            ? paciente.medicamentos.join(', ')
-            : 'Ninguno registrado'
-          }
-        </p>
+            <h2>
+              Información clínica
+            </h2>
+          </div>
+        </div>
 
-        <p>
-          <strong>Antecedentes:</strong>{' '}
-          {paciente.antecedentes ||
-            'Sin antecedentes registrados'}
-        </p>
+        <div className="patient-clinical-grid">
 
-        <p>
-          <strong>Información importante:</strong>{' '}
-          {paciente.informacionImportante ||
-            'Sin información registrada'}
-        </p>
+          <div className="patient-clinical-item">
+            <span>
+              Enfermedades
+            </span>
 
-        <p>
-          <strong>Observaciones generales:</strong>{' '}
-          {paciente.observacionesGenerales ||
-            'Sin observaciones'}
-        </p>
+            <p>
+              {mostrarLista(
+                paciente.enfermedades,
+                'Ninguna registrada'
+              )}
+            </p>
+          </div>
+
+          <div className="patient-clinical-item">
+            <span>
+              Alergias
+            </span>
+
+            <p>
+              {mostrarLista(
+                paciente.alergias,
+                'Ninguna registrada'
+              )}
+            </p>
+          </div>
+
+          <div className="patient-clinical-item">
+            <span>
+              Medicamentos
+            </span>
+
+            <p>
+              {mostrarLista(
+                paciente.medicamentos,
+                'Ninguno registrado'
+              )}
+            </p>
+          </div>
+
+          <div className="patient-clinical-item">
+            <span>
+              Antecedentes
+            </span>
+
+            <p>
+              {paciente.antecedentes ||
+                'Sin antecedentes registrados'}
+            </p>
+          </div>
+
+          <div className="patient-clinical-item full">
+            <span>
+              Información importante
+            </span>
+
+            <p>
+              {paciente.informacionImportante ||
+                'Sin información registrada'}
+            </p>
+          </div>
+
+          <div className="patient-clinical-item full">
+            <span>
+              Observaciones generales
+            </span>
+
+            <p>
+              {paciente.observacionesGenerales ||
+                'Sin observaciones'}
+            </p>
+          </div>
+
+        </div>
+
       </section>
 
-  <section>
-  <h2>Información clínica</h2>
+      {/* RESPONSABLES */}
 
-  {/* todo lo que ya tenés */}
-</section>
+      <section className="patient-detail-module">
+        <ResponsablesPaciente
+          pacienteId={
+            paciente._id
+          }
+        />
+      </section>
 
-<ResponsablesPaciente
-  pacienteId={paciente._id}
-/>
-<NotasPaciente
-  pacienteId={paciente._id}
-/>
-<PlanesTrabajoPaciente
-  pacienteId={paciente._id}
-/>
+      {/* NOTAS */}
 
-<SesionesPaciente
-  pacienteId={paciente._id}
-/>
+      <section className="patient-detail-module">
+        <NotasPaciente
+          pacienteId={
+            paciente._id
+          }
+        />
+      </section>
+
+      {/* PLANES */}
+
+      <section className="patient-detail-module">
+        <PlanesTrabajoPaciente
+          pacienteId={
+            paciente._id
+          }
+        />
+      </section>
+
+      {/* SESIONES */}
+
+      <section className="patient-detail-module patient-detail-sessions">
+        <SesionesPaciente
+          pacienteId={
+            paciente._id
+          }
+        />
+      </section>
+
     </main>
   )
 }

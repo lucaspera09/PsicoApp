@@ -12,20 +12,34 @@ export default function LoginPage() {
   const {
     loading,
     error
-  } = useSelector((state) => state.auth)
+  } = useSelector(
+    (state) => state.auth
+  )
 
-  const [form, setForm] = useState({
+  const [
+    mostrarPassword,
+    setMostrarPassword
+  ] = useState(false)
+
+  const [
+    form,
+    setForm
+  ] = useState({
     email: '',
     password: ''
   })
 
   useEffect(() => {
     return () => {
-      dispatch(clearAuthError())
+      dispatch(
+        clearAuthError()
+      )
     }
   }, [dispatch])
 
-  const handleChange = (event) => {
+  const handleChange = (
+    event
+  ) => {
     const {
       name,
       value
@@ -37,90 +51,214 @@ export default function LoginPage() {
     }))
 
     if (error) {
-      dispatch(clearAuthError())
+      dispatch(
+        clearAuthError()
+      )
     }
   }
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = async (
+    event
+  ) => {
     event.preventDefault()
 
-    if (!form.email.trim() || !form.password) {
+    if (
+      !form.email.trim() ||
+      !form.password
+    ) {
       return
     }
 
     await dispatch(
       login({
-        email: form.email.trim(),
-        password: form.password
+        email:
+          form.email.trim(),
+        password:
+          form.password
       })
     )
   }
 
   return (
-    <main>
-      <section>
+    <main className="login-page">
 
-        <h1>PsicoApp</h1>
+      <div className="login-background-circle login-circle-one" />
 
-        <p>
-          Ingresá a tu cuenta
-        </p>
+      <div className="login-background-circle login-circle-two" />
 
-        <form onSubmit={handleSubmit}>
+      <section className="login-card">
+
+        {/* MARCA */}
+
+        <div className="login-brand">
+
+          <div className="login-logo">
+            P
+          </div>
 
           <div>
+            <h1>
+              PsicoApp
+            </h1>
+
+            <p>
+              Gestión clínica simple,
+              organizada y profesional.
+            </p>
+          </div>
+
+        </div>
+
+        {/* TITULO */}
+
+        <div className="login-heading">
+
+          <h2>
+            Bienvenido
+          </h2>
+
+          <p>
+            Ingresá a tu cuenta para
+            continuar.
+          </p>
+
+        </div>
+
+        {/* FORMULARIO */}
+
+        <form
+          className="login-form"
+          onSubmit={
+            handleSubmit
+          }
+        >
+
+          {/* EMAIL */}
+
+          <div className="login-form-group">
+
             <label htmlFor="email">
               Email
             </label>
 
-            <input
-              id="email"
-              name="email"
-              type="email"
-              value={form.email}
-              onChange={handleChange}
-              placeholder="tu@email.com"
-              autoComplete="email"
-              required
-            />
+            <div className="login-input-wrapper">
+
+              <span className="login-input-icon">
+                @
+              </span>
+
+              <input
+                id="email"
+                name="email"
+                type="email"
+                value={
+                  form.email
+                }
+                onChange={
+                  handleChange
+                }
+                placeholder="tu@email.com"
+                autoComplete="email"
+                required
+              />
+
+            </div>
+
           </div>
 
-          <div>
+          {/* PASSWORD */}
+
+          <div className="login-form-group">
+
             <label htmlFor="password">
               Contraseña
             </label>
 
-            <input
-              id="password"
-              name="password"
-              type="password"
-              value={form.password}
-              onChange={handleChange}
-              placeholder="Ingresá tu contraseña"
-              autoComplete="current-password"
-              required
-            />
+            <div className="login-input-wrapper">
+
+              <span className="login-input-icon">
+                •
+              </span>
+
+              <input
+                id="password"
+                name="password"
+                type={
+                  mostrarPassword
+                    ? 'text'
+                    : 'password'
+                }
+                value={
+                  form.password
+                }
+                onChange={
+                  handleChange
+                }
+                placeholder="Ingresá tu contraseña"
+                autoComplete="current-password"
+                required
+              />
+
+              <button
+                type="button"
+                className="login-password-toggle"
+                onClick={() =>
+                  setMostrarPassword(
+                    (prev) =>
+                      !prev
+                  )
+                }
+                aria-label={
+                  mostrarPassword
+                    ? 'Ocultar contraseña'
+                    : 'Mostrar contraseña'
+                }
+              >
+                {mostrarPassword
+                  ? 'Ocultar'
+                  : 'Ver'}
+              </button>
+
+            </div>
+
           </div>
 
+          {/* ERROR */}
+
           {error && (
-            <p>
+            <div className="login-error">
               {error}
-            </p>
+            </div>
           )}
+
+          {/* BOTON */}
 
           <button
             type="submit"
-            disabled={loading}
+            className="login-submit"
+            disabled={
+              loading
+            }
           >
             {loading
               ? 'Ingresando...'
-              : 'Iniciar sesión'
-            }
+              : 'Iniciar sesión'}
           </button>
 
         </form>
 
+        <div className="login-footer">
+          <span>
+            PsicoApp
+          </span>
+
+          <span>
+            Gestión para profesionales
+          </span>
+        </div>
+
       </section>
+
     </main>
   )
 }

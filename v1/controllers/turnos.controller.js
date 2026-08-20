@@ -60,10 +60,15 @@ export const update = async (req, res, next) => {
 export const changeStatus = async (req, res, next) => {
   try {
     const { id } = req.params
-    const { estado } = req.body
+
+    const {
+      pacienteId,
+      estado
+    } = req.body
 
     const turno = await turnosService.changeStatus(
       id,
+      pacienteId,
       estado,
       req.user
     )

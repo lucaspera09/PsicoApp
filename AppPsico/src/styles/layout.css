@@ -1,0 +1,554 @@
+/* =========================
+   APP LAYOUT
+========================= */
+
+.app-shell {
+  min-height: 100vh;
+
+  background:
+    var(--color-bg);
+}
+
+
+/* =========================
+   SIDEBAR
+========================= */
+
+.app-sidebar {
+  position: fixed;
+
+  top: 0;
+  left: 0;
+  bottom: 0;
+
+  width:
+    var(--sidebar-width);
+
+  display: flex;
+  flex-direction: column;
+
+  padding: 20px 14px;
+
+  border-right:
+    1px solid
+    var(--color-border);
+
+  background:
+    var(--color-surface);
+
+  z-index: 50;
+}
+
+
+/* BRAND */
+
+.app-brand {
+  display: flex;
+  align-items: center;
+
+  gap: 11px;
+
+  padding: 4px 6px 20px;
+}
+
+.app-brand-icon {
+  width: 42px;
+  height: 42px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 13px;
+
+  background:
+    var(--color-primary);
+
+  color: white;
+
+  font-size: 19px;
+  font-weight: 850;
+
+  box-shadow:
+    0 6px 16px
+    rgba(108, 99, 217, 0.22);
+}
+
+.app-brand > div:last-child {
+  display: flex;
+  flex-direction: column;
+
+  gap: 1px;
+}
+
+.app-brand strong {
+  font-size: 16px;
+}
+
+.app-brand small {
+  color:
+    var(--color-text-soft);
+
+  font-size: 10px;
+}
+
+
+/* =========================
+   USUARIO SIDEBAR
+========================= */
+
+.app-user-card {
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+
+  padding: 11px;
+
+  margin-bottom: 18px;
+
+  border-radius: 13px;
+
+  background:
+    var(--color-surface-soft);
+}
+
+.app-user-avatar {
+  width: 36px;
+  height: 36px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 11px;
+
+  background:
+    var(--color-primary-soft);
+
+  color:
+    var(--color-primary);
+
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.app-user-info {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 2px;
+}
+
+.app-user-info strong {
+  overflow: hidden;
+
+  font-size: 12px;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-user-info span {
+  color:
+    var(--color-text-soft);
+
+  font-size: 10px;
+}
+
+
+/* =========================
+   SIDEBAR NAV
+========================= */
+
+.app-sidebar-nav {
+  display: flex;
+  flex-direction: column;
+
+  gap: 5px;
+}
+
+.app-nav-link {
+  min-height: 45px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  padding: 10px 11px;
+
+  border-radius: 11px;
+
+  color:
+    var(--color-text-soft);
+
+  font-size: 13px;
+  font-weight: 700;
+
+  text-decoration: none;
+
+  transition:
+    background 0.15s,
+    color 0.15s,
+    transform 0.15s;
+}
+
+.app-nav-link:hover {
+  background:
+    var(--color-surface-soft);
+
+  color:
+    var(--color-text);
+}
+
+.app-nav-link.active {
+  background:
+    var(--color-primary-soft);
+
+  color:
+    var(--color-primary);
+}
+
+.app-nav-icon {
+  width: 25px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 18px;
+}
+
+
+/* =========================
+   LOGOUT
+========================= */
+
+.app-sidebar-footer {
+  margin-top: auto;
+
+  padding-top: 15px;
+
+  border-top:
+    1px solid
+    var(--color-border);
+}
+
+.app-logout-button {
+  width: 100%;
+
+  min-height: 43px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  padding: 9px 11px;
+
+  border: none;
+
+  border-radius: 11px;
+
+  background:
+    transparent;
+
+  color:
+    var(--color-text-soft);
+
+  font-size: 12px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.app-logout-button:hover {
+  background:
+    var(--color-danger-soft);
+
+  color:
+    var(--color-danger);
+}
+
+
+/* =========================
+   MAIN
+========================= */
+
+.app-main {
+  min-height: 100vh;
+
+  margin-left:
+    var(--sidebar-width);
+}
+
+.app-content {
+  width: 100%;
+
+  max-width: 1400px;
+
+  margin: 0 auto;
+
+  padding: 28px 30px 40px;
+}
+
+
+/* =========================
+   HEADER MOBILE
+========================= */
+
+.app-mobile-header {
+  display: none;
+}
+
+
+/* =========================
+   BOTTOM NAV
+========================= */
+
+.app-bottom-nav {
+  display: none;
+}
+
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 768px) {
+
+  .app-sidebar {
+    display: none;
+  }
+
+  .app-main {
+    margin-left: 0;
+  }
+
+
+  /* HEADER */
+
+  .app-mobile-header {
+    position: sticky;
+
+    top: 0;
+
+    z-index: 45;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    min-height: 64px;
+
+    padding:
+      9px 15px;
+
+    border-bottom:
+      1px solid
+      var(--color-border);
+
+    background:
+      rgba(255, 255, 255, 0.94);
+
+    backdrop-filter:
+      blur(14px);
+  }
+
+  .app-brand-mobile {
+    display: flex;
+    align-items: center;
+
+    gap: 9px;
+  }
+
+  .app-brand-mobile
+  .app-brand-icon {
+    width: 37px;
+    height: 37px;
+
+    border-radius: 11px;
+
+    font-size: 16px;
+  }
+
+  .app-brand-mobile > div:last-child {
+    display: flex;
+    flex-direction: column;
+
+    gap: 1px;
+  }
+
+  .app-brand-mobile strong {
+    font-size: 14px;
+  }
+
+  .app-mobile-user-name {
+    max-width: 190px;
+
+    overflow: hidden;
+
+    color:
+      var(--color-text-soft);
+
+    font-size: 9px;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .app-mobile-logout {
+    width: 40px;
+    height: 40px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: none;
+
+    border-radius: 11px;
+
+    background:
+      var(--color-surface-soft);
+
+    color:
+      var(--color-text-soft);
+
+    font-size: 18px;
+  }
+
+
+  /* CONTENT */
+
+  .app-content {
+    padding:
+      20px 14px
+      calc(
+        var(--mobile-nav-height) +
+        35px
+      );
+  }
+
+
+  /* BOTTOM NAV */
+
+  .app-bottom-nav {
+    position: fixed;
+
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    z-index: 50;
+
+    min-height:
+      var(--mobile-nav-height);
+
+    display: grid;
+
+    grid-template-columns:
+      repeat(4, 1fr);
+
+    padding:
+      7px 8px
+      calc(
+        7px +
+        env(
+          safe-area-inset-bottom
+        )
+      );
+
+    border-top:
+      1px solid
+      var(--color-border);
+
+    background:
+      rgba(
+        255,
+        255,
+        255,
+        0.97
+      );
+
+    box-shadow:
+      0 -7px 22px
+      rgba(
+        0,
+        0,
+        0,
+        0.05
+      );
+
+    backdrop-filter:
+      blur(14px);
+  }
+
+  .app-bottom-nav.admin {
+    grid-template-columns:
+      repeat(2, 1fr);
+  }
+
+  .app-bottom-nav
+  .app-nav-link {
+    min-height: 52px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    gap: 2px;
+
+    padding: 5px;
+
+    border-radius: 10px;
+
+    text-align: center;
+
+    font-size: 9px;
+  }
+
+  .app-bottom-nav
+  .app-nav-link.active {
+    background:
+      var(--color-primary-soft);
+
+    color:
+      var(--color-primary);
+  }
+
+  .app-bottom-icon {
+    font-size: 20px;
+
+    line-height: 1;
+  }
+}
+
+
+/* =========================
+   CELULAR CHICO
+========================= */
+
+@media (max-width: 430px) {
+
+  .app-content {
+    padding-left: 11px;
+    padding-right: 11px;
+  }
+
+  .app-mobile-user-name {
+    max-width: 145px;
+  }
+
+  .app-bottom-nav
+  .app-nav-link {
+    font-size: 8px;
+  }
+}
