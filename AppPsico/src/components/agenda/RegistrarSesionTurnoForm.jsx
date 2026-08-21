@@ -693,27 +693,25 @@ export default function RegistrarSesionTurnoForm({
 
                 return (
                   <button
-                    key={area}
-                    type="button"
-                    className={
-                      seleccionada
-                        ? 'turn-session-area selected'
-                        : 'turn-session-area'
-                    }
-                    onClick={() =>
-                      toggleArea(
-                        area
-                      )
-                    }
-                  >
-                    {seleccionada && (
-                      <span>
-                        ✓
-                      </span>
-                    )}
+  key={area}
+  type="button"
+  className={
+    seleccionada
+      ? 'turn-session-area selected'
+      : 'turn-session-area'
+  }
+  onClick={() =>
+    toggleArea(area)
+  }
+>
+  <span className="turn-session-area-check">
+    {seleccionada ? '✓' : ''}
+  </span>
 
-                    {area}
-                  </button>
+  <span className="turn-session-area-name">
+    {area}
+  </span>
+</button>
                 )
               }
             )}

@@ -1,5 +1,6 @@
 import { NavLink, Outlet } from 'react-router'
 import { useDispatch, useSelector } from 'react-redux'
+import NexoLogo from '../components/branding/NexoLogo.jsx'
 
 import { logout } from '../features/auth.slice.js'
 
@@ -46,20 +47,24 @@ export default function MainLayout() {
       <aside className="app-sidebar">
 
         <div className="app-brand">
-          <div className="app-brand-icon">
-            P
-          </div>
 
-          <div>
-            <strong>
-              PsicoApp
-            </strong>
+  <NexoLogo
+    size={42}
+  />
 
-            <small>
-              Gestión profesional
-            </small>
-          </div>
-        </div>
+  <div>
+
+    <strong>
+      Nexo
+    </strong>
+
+    <small>
+      Agenda y seguimiento
+    </small>
+
+  </div>
+
+</div>
 
         {/* USUARIO */}
 
@@ -183,21 +188,23 @@ export default function MainLayout() {
 
           <div className="app-brand-mobile">
 
-            <div className="app-brand-icon">
-              P
-            </div>
+  <NexoLogo
+    size={38}
+  />
 
-            <div>
-              <strong>
-                PsicoApp
-              </strong>
+  <div>
 
-              <span className="app-mobile-user-name">
-                {nombreUsuario}
-              </span>
-            </div>
+    <strong>
+      Nexo
+    </strong>
 
-          </div>
+    <span className="app-mobile-user-name">
+      {nombreUsuario}
+    </span>
+
+  </div>
+
+</div>
 
           <button
             type="button"

@@ -5,12 +5,14 @@ import {
 } from 'react'
 
 import {
+  useLocation,
   useNavigate
 } from 'react-router'
 
 import api from '../api/api.js'
 
 export default function NotaRapidaPage() {
+  const location = useLocation()
   const navigate = useNavigate()
 
   const [pacientes, setPacientes] =
@@ -44,6 +46,19 @@ export default function NotaRapidaPage() {
 
   const [guardado, setGuardado] =
     useState(false)
+
+useEffect(() => {
+  const pacienteInicial =
+    location.state?.pacienteInicial
+
+  if (
+    pacienteInicial?._id
+  ) {
+    setPacienteSeleccionado(
+      pacienteInicial
+    )
+  }
+}, [location.state])
 
   useEffect(() => {
     const cargarPacientes = async () => {

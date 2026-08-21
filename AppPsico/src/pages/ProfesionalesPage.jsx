@@ -1,20 +1,49 @@
-import { useEffect, useMemo, useState } from 'react'
+import {
+  useEffect,
+  useMemo,
+  useState
+} from 'react'
+
+import {
+  useLocation
+} from 'react-router'
 
 import api from '../api/api.js'
 
-import CrearProfesionalForm from '../components/admin/CrearProfesionalForm.jsx'
 import EditarProfesionalForm from '../components/admin/EditarProfesionalForm.jsx'
 
 export default function ProfesionalesPage() {
-  const [profesionales, setProfesionales] = useState([])
-  const [busqueda, setBusqueda] = useState('')
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const location =
+    useLocation()
 
   const [
-    mostrarFormulario,
-    setMostrarFormulario
-  ] = useState(false)
+    profesionales,
+    setProfesionales
+  ] = useState([])
+
+  const [
+    busqueda,
+    setBusqueda
+  ] = useState('')
+
+  const [
+    loading,
+    setLoading
+  ] = useState(true)
+
+  const [
+    error,
+    setError
+  ] = useState(null)
+
+  const [
+    seccionActiva,
+    setSeccionActiva
+  ] = useState(
+    location.state
+      ?.seccionInicial ||
+      'pendientes'
+  )
 
   const [
     profesionalEditando,
@@ -22,40 +51,127 @@ export default function ProfesionalesPage() {
   ] = useState(null)
 
   const [
-    cambiandoEstadoId,
-    setCambiandoEstadoId
+    procesandoId,
+    setProcesandoId
   ] = useState(null)
 
+  /*
+    CARGAR PROFESIONALES
+  */
+
   useEffect(() => {
-    const cargarProfesionales = async () => {
-      try {
-        setLoading(true)
-        setError(null)
+    const cargarProfesionales =
+      async () => {
+        try {
+          setLoading(true)
+          setError(null)
 
-        const response =
-          await api.get('/profesionales')
+          const response =
+            await api.get(
+              '/profesionales',
+              {
+                params: {
+                  limit: 100
+                }
+              }
+            )
 
-        const recibidos =
-          response.data?.data ||
-          response.data
+          const recibidos =
+            response.data?.data ||
+            response.data
 
-        setProfesionales(
-          Array.isArray(recibidos)
-            ? recibidos
-            : []
-        )
-      } catch (error) {
-        setError(
-          error.response?.data?.message ||
-          'No se pudieron cargar los profesionales'
-        )
-      } finally {
-        setLoading(false)
+          setProfesionales(
+            Array.isArray(
+              recibidos
+            )
+              ? recibidos
+              : []
+          )
+        } catch (error) {
+          console.error(
+            'Error al cargar profesionales:',
+            error
+          )
+
+          setError(
+            error.response
+              ?.data
+              ?.message ||
+            'No se pudieron cargar los profesionales'
+          )
+        } finally {
+          setLoading(false)
+        }
       }
-    }
 
     cargarProfesionales()
   }, [])
+
+  /*
+    ESTADO DE CUENTA
+
+    Compatibilidad:
+    usuarios viejos sin estadoCuenta
+    se consideran aprobados.
+  */
+
+  const obtenerEstadoCuenta = (
+    profesional
+  ) => {
+    return (
+      profesional.user
+        ?.estadoCuenta ||
+      'aprobado'
+    )
+  }
+
+  /*
+    CONTADORES
+  */
+
+  const cantidadPendientes =
+    useMemo(
+      () =>
+        profesionales.filter(
+          (profesional) =>
+            obtenerEstadoCuenta(
+              profesional
+            ) ===
+            'pendiente'
+        ).length,
+      [profesionales]
+    )
+
+  const cantidadAprobados =
+    useMemo(
+      () =>
+        profesionales.filter(
+          (profesional) =>
+            obtenerEstadoCuenta(
+              profesional
+            ) ===
+            'aprobado'
+        ).length,
+      [profesionales]
+    )
+
+  const cantidadRechazados =
+    useMemo(
+      () =>
+        profesionales.filter(
+          (profesional) =>
+            obtenerEstadoCuenta(
+              profesional
+            ) ===
+            'rechazado'
+        ).length,
+      [profesionales]
+    )
+
+  /*
+    FILTRADO POR PESTAÑA +
+    BUSCADOR
+  */
 
   const profesionalesFiltrados =
     useMemo(() => {
@@ -64,14 +180,49 @@ export default function ProfesionalesPage() {
           .trim()
           .toLowerCase()
 
-      if (!texto) {
-        return profesionales
-      }
-
       return profesionales.filter(
         (profesional) => {
+          const estado =
+            obtenerEstadoCuenta(
+              profesional
+            )
+
+          if (
+            seccionActiva ===
+              'pendientes' &&
+            estado !== 'pendiente'
+          ) {
+            return false
+          }
+
+          if (
+            seccionActiva ===
+              'aprobados' &&
+            estado !== 'aprobado'
+          ) {
+            return false
+          }
+
+          if (
+            seccionActiva ===
+              'rechazados' &&
+            estado !== 'rechazado'
+          ) {
+            return false
+          }
+
+          if (!texto) {
+            return true
+          }
+
           const nombre =
-            `${profesional.nombre || ''} ${profesional.apellido || ''}`
+            `${
+              profesional.nombre ||
+              ''
+            } ${
+              profesional.apellido ||
+              ''
+            }`
               .toLowerCase()
 
           const profesion =
@@ -82,7 +233,8 @@ export default function ProfesionalesPage() {
 
           const email =
             (
-              profesional.user?.email ||
+              profesional.user
+                ?.email ||
               ''
             ).toLowerCase()
 
@@ -95,27 +247,134 @@ export default function ProfesionalesPage() {
       )
     }, [
       profesionales,
-      busqueda
+      busqueda,
+      seccionActiva
     ])
 
-  const handleProfesionalCreado = (
-    nuevoProfesional
+  /*
+    APROBAR
+  */
+
+  const handleAprobar =
+    async (profesional) => {
+      const confirmado =
+        window.confirm(
+          `¿Querés aprobar la cuenta de ${profesional.nombre} ${profesional.apellido}?`
+        )
+
+      if (!confirmado) {
+        return
+      }
+
+      try {
+        setProcesandoId(
+          profesional._id
+        )
+
+        const response =
+          await api.patch(
+            `/profesionales/${profesional._id}/aprobar`
+          )
+
+        const actualizado =
+          response.data?.data ||
+          response.data
+
+        setProfesionales(
+          (prev) =>
+            prev.map(
+              (item) =>
+                item._id ===
+                profesional._id
+                  ? actualizado
+                  : item
+            )
+        )
+
+      } catch (error) {
+        console.error(
+          'Error al aprobar solicitud:',
+          error
+        )
+
+        alert(
+          error.response
+            ?.data
+            ?.message ||
+          'No se pudo aprobar la solicitud'
+        )
+      } finally {
+        setProcesandoId(null)
+      }
+    }
+
+  /*
+    RECHAZAR
+  */
+
+  const handleRechazar =
+    async (profesional) => {
+      const confirmado =
+        window.confirm(
+          `¿Querés rechazar la solicitud de ${profesional.nombre} ${profesional.apellido}?`
+        )
+
+      if (!confirmado) {
+        return
+      }
+
+      try {
+        setProcesandoId(
+          profesional._id
+        )
+
+        const response =
+          await api.patch(
+            `/profesionales/${profesional._id}/rechazar`
+          )
+
+        const actualizado =
+          response.data?.data ||
+          response.data
+
+        setProfesionales(
+          (prev) =>
+            prev.map(
+              (item) =>
+                item._id ===
+                profesional._id
+                  ? actualizado
+                  : item
+            )
+        )
+
+      } catch (error) {
+        console.error(
+          'Error al rechazar solicitud:',
+          error
+        )
+
+        alert(
+          error.response
+            ?.data
+            ?.message ||
+          'No se pudo rechazar la solicitud'
+        )
+      } finally {
+        setProcesandoId(null)
+      }
+    }
+
+  /*
+    EDITAR
+  */
+
+  const handleEditar = (
+    profesional
   ) => {
-    setProfesionales((prev) => [
-      nuevoProfesional,
-      ...prev
-    ])
-
-    setMostrarFormulario(false)
-  }
-
-  const handleCancelarFormulario = () => {
-    setMostrarFormulario(false)
-  }
-
-  const handleEditar = (profesional) => {
-    setMostrarFormulario(false)
-    setProfesionalEditando(profesional)
+    setProfesionalEditando(
+      profesional
+    )
 
     window.scrollTo({
       top: 0,
@@ -123,77 +382,113 @@ export default function ProfesionalesPage() {
     })
   }
 
-  const handleProfesionalActualizado = (
-    profesionalActualizado
-  ) => {
-    setProfesionales((prev) =>
-      prev.map((profesional) =>
-        profesional._id === profesionalActualizado._id
-          ? profesionalActualizado
-          : profesional
+  const handleProfesionalActualizado =
+    (
+      profesionalActualizado
+    ) => {
+      setProfesionales(
+        (prev) =>
+          prev.map(
+            (profesional) =>
+              profesional._id ===
+              profesionalActualizado._id
+                ? profesionalActualizado
+                : profesional
+          )
       )
-    )
 
-    setProfesionalEditando(null)
-  }
+      setProfesionalEditando(
+        null
+      )
+    }
 
-  const handleCancelarEdicion = () => {
-    setProfesionalEditando(null)
-  }
+  /*
+    ACTIVAR / DESACTIVAR
+  */
 
-  const handleCambiarEstado = async (
+  const handleCambiarEstado =
+    async (profesional) => {
+      const nuevoEstado =
+        !profesional.activo
+
+      const mensaje =
+        nuevoEstado
+          ? `¿Querés activar a ${profesional.nombre} ${profesional.apellido}?`
+          : `¿Querés desactivar a ${profesional.nombre} ${profesional.apellido}?`
+
+      if (
+        !window.confirm(mensaje)
+      ) {
+        return
+      }
+
+      try {
+        setProcesandoId(
+          profesional._id
+        )
+
+        const response =
+          await api.patch(
+            `/profesionales/${profesional._id}/status`,
+            {
+              activo:
+                nuevoEstado
+            }
+          )
+
+        const actualizado =
+          response.data?.data ||
+          response.data
+
+        setProfesionales(
+          (prev) =>
+            prev.map(
+              (item) =>
+                item._id ===
+                profesional._id
+                  ? actualizado
+                  : item
+            )
+        )
+
+      } catch (error) {
+        console.error(
+          'Error al cambiar estado:',
+          error
+        )
+
+        alert(
+          error.response
+            ?.data
+            ?.message ||
+          'No se pudo cambiar el estado del profesional'
+        )
+      } finally {
+        setProcesandoId(null)
+      }
+    }
+
+  const mostrarFechaSolicitud = (
     profesional
   ) => {
-    const nuevoEstado =
-      !profesional.activo
+    const fecha =
+      profesional.createdAt ||
+      profesional.user?.createdAt
 
-    const mensaje =
-      nuevoEstado
-        ? `¿Querés activar a ${profesional.nombre} ${profesional.apellido}?`
-        : `¿Querés desactivar a ${profesional.nombre} ${profesional.apellido}?`
-
-    const confirmado =
-      window.confirm(mensaje)
-
-    if (!confirmado) {
-      return
+    if (!fecha) {
+      return 'Sin fecha'
     }
 
-    try {
-      setCambiandoEstadoId(
-        profesional._id
-      )
-
-      await api.patch(
-        `/profesionales/${profesional._id}/status`,
-        {
-          activo: nuevoEstado
-        }
-      )
-
-      setProfesionales((prev) =>
-        prev.map((item) =>
-          item._id === profesional._id
-            ? {
-                ...item,
-                activo: nuevoEstado
-              }
-            : item
-        )
-      )
-    } catch (error) {
-      console.error(
-        'Error al cambiar estado:',
-        error
-      )
-
-      alert(
-        error.response?.data?.message ||
-        'No se pudo cambiar el estado del profesional'
-      )
-    } finally {
-      setCambiandoEstadoId(null)
-    }
+    return new Date(
+      fecha
+    ).toLocaleDateString(
+      'es-UY',
+      {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      }
+    )
   }
 
   if (loading) {
@@ -209,6 +504,7 @@ export default function ProfesionalesPage() {
   if (error) {
     return (
       <main className="professionals-page">
+
         <h1>
           Profesionales
         </h1>
@@ -216,6 +512,7 @@ export default function ProfesionalesPage() {
         <p>
           {error}
         </p>
+
       </main>
     )
   }
@@ -223,11 +520,14 @@ export default function ProfesionalesPage() {
   return (
     <main className="professionals-page">
 
+      {/* HEADER */}
+
       <section className="professionals-header">
 
         <div>
+
           <p className="professionals-eyebrow">
-            Administración
+            Nexo Administración
           </p>
 
           <h1>
@@ -235,55 +535,124 @@ export default function ProfesionalesPage() {
           </h1>
 
           <p>
-            Administrá las cuentas
-            y el acceso de los profesionales.
+            Revisá solicitudes y administrá
+            las cuentas habilitadas.
           </p>
-        </div>
 
-        {!mostrarFormulario &&
-          !profesionalEditando && (
-            <button
-              type="button"
-              className="professionals-new-button"
-              onClick={() =>
-                setMostrarFormulario(true)
-              }
-            >
-              + Nuevo profesional
-            </button>
-          )}
+        </div>
 
       </section>
 
-      {mostrarFormulario && (
-        <section className="card professionals-form-card">
-          <CrearProfesionalForm
-            onCreated={handleProfesionalCreado}
-            onCancel={handleCancelarFormulario}
-          />
-        </section>
-      )}
+      {/* EDICIÓN */}
 
       {profesionalEditando && (
         <section className="card professionals-form-card">
+
           <EditarProfesionalForm
-            profesional={profesionalEditando}
-            onUpdated={handleProfesionalActualizado}
-            onCancel={handleCancelarEdicion}
+            profesional={
+              profesionalEditando
+            }
+            onUpdated={
+              handleProfesionalActualizado
+            }
+            onCancel={() =>
+              setProfesionalEditando(
+                null
+              )
+            }
           />
+
         </section>
       )}
+
+      {/* PESTAÑAS */}
+
+      <nav className="professionals-tabs">
+
+        <button
+          type="button"
+          className={
+            seccionActiva ===
+            'pendientes'
+              ? 'professionals-tab active'
+              : 'professionals-tab'
+          }
+          onClick={() =>
+            setSeccionActiva(
+              'pendientes'
+            )
+          }
+        >
+          Solicitudes
+
+          {cantidadPendientes > 0 && (
+            <span>
+              {cantidadPendientes}
+            </span>
+          )}
+        </button>
+
+        <button
+          type="button"
+          className={
+            seccionActiva ===
+            'aprobados'
+              ? 'professionals-tab active'
+              : 'professionals-tab'
+          }
+          onClick={() =>
+            setSeccionActiva(
+              'aprobados'
+            )
+          }
+        >
+          Profesionales
+
+          <span>
+            {cantidadAprobados}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          className={
+            seccionActiva ===
+            'rechazados'
+              ? 'professionals-tab active'
+              : 'professionals-tab'
+          }
+          onClick={() =>
+            setSeccionActiva(
+              'rechazados'
+            )
+          }
+        >
+          Rechazadas
+
+          {cantidadRechazados > 0 && (
+            <span>
+              {cantidadRechazados}
+            </span>
+          )}
+        </button>
+
+      </nav>
+
+      {/* BUSCADOR */}
 
       <section className="professionals-toolbar">
 
         <div className="professionals-search">
+
           <span>
             ⌕
           </span>
 
           <input
             type="search"
-            value={busqueda}
+            value={
+              busqueda
+            }
             onChange={(event) =>
               setBusqueda(
                 event.target.value
@@ -291,156 +660,304 @@ export default function ProfesionalesPage() {
             }
             placeholder="Buscar por nombre, profesión o email..."
           />
+
         </div>
 
         <span className="professionals-count">
-          {profesionalesFiltrados.length}{' '}
-          {profesionalesFiltrados.length === 1
-            ? 'profesional'
-            : 'profesionales'}
+          {
+            profesionalesFiltrados.length
+          }{' '}
+          {profesionalesFiltrados.length ===
+          1
+            ? 'resultado'
+            : 'resultados'}
         </span>
 
       </section>
 
-      {profesionalesFiltrados.length === 0 ? (
+      {/* VACÍO */}
+
+      {profesionalesFiltrados.length ===
+      0 ? (
+
         <section className="professionals-empty">
 
           <div className="professionals-empty-icon">
-            ♙
+            {seccionActiva ===
+            'pendientes'
+              ? '✓'
+              : '♙'}
           </div>
 
           <h2>
-            No encontramos profesionales
+            {seccionActiva ===
+            'pendientes'
+              ? 'No hay solicitudes pendientes'
+              : seccionActiva ===
+                'rechazados'
+              ? 'No hay solicitudes rechazadas'
+              : 'No encontramos profesionales'}
           </h2>
 
           <p>
-            Probá con otra búsqueda
-            o agregá un profesional nuevo.
+            {seccionActiva ===
+            'pendientes'
+              ? 'Cuando alguien solicite acceso a Nexo aparecerá acá.'
+              : 'Probá con otra búsqueda.'}
           </p>
 
         </section>
+
       ) : (
+
         <section className="professionals-grid">
 
           {profesionalesFiltrados.map(
-            (profesional) => (
-              <article
-                key={profesional._id}
-                className="professional-card"
-              >
+            (profesional) => {
+              const estadoCuenta =
+                obtenerEstadoCuenta(
+                  profesional
+                )
 
-                <div className="professional-card-header">
+              const procesando =
+                procesandoId ===
+                profesional._id
 
-                  <div className="professional-avatar">
-                    {profesional.nombre
-                      ?.charAt(0)
-                      ?.toUpperCase()}
-
-                    {profesional.apellido
-                      ?.charAt(0)
-                      ?.toUpperCase()}
-                  </div>
-
-                  <span
-                    className={
-                      profesional.activo
-                        ? 'professional-status active'
-                        : 'professional-status inactive'
-                    }
-                  >
-                    {profesional.activo
-                      ? 'Activo'
-                      : 'Inactivo'}
-                  </span>
-
-                </div>
-
-                <div className="professional-card-body">
-
-                  <h2>
-                    {profesional.nombre}{' '}
-                    {profesional.apellido}
-                  </h2>
-
-                  <span className="professional-role">
-                    {profesional.profesion ||
-                      'Profesión sin especificar'}
-                  </span>
-
-                  <div className="professional-info">
-
-                    <div>
-                      <span>
-                        Email
-                      </span>
-
-                      <strong>
-                        {profesional.user?.email ||
-                          'Sin email'}
-                      </strong>
-                    </div>
-
-                    <div>
-                      <span>
-                        Teléfono
-                      </span>
-
-                      <strong>
-                        {profesional.telefono ||
-                          'Sin teléfono'}
-                      </strong>
-                    </div>
-
-                  </div>
-
-                </div>
-
-                <div className="professional-actions">
-
-                  <button
-                    type="button"
-                    className="professional-edit"
-                    onClick={() =>
-                      handleEditar(
-                        profesional
-                      )
-                    }
-                  >
-                    Editar
-                  </button>
-
-                  <button
-                    type="button"
-                    className={
-                      profesional.activo
-                        ? 'professional-state danger'
-                        : 'professional-state success'
-                    }
-                    onClick={() =>
-                      handleCambiarEstado(
-                        profesional
-                      )
-                    }
-                    disabled={
-                      cambiandoEstadoId ===
-                      profesional._id
-                    }
-                  >
-                    {cambiandoEstadoId ===
+              return (
+                <article
+                  key={
                     profesional._id
-                      ? 'Guardando...'
-                      : profesional.activo
-                      ? 'Desactivar'
-                      : 'Activar'}
-                  </button>
+                  }
+                  className={
+                    estadoCuenta ===
+                    'pendiente'
+                      ? 'professional-card professional-request-card'
+                      : 'professional-card'
+                  }
+                >
 
-                </div>
+                  {/* HEADER */}
 
-              </article>
-            )
+                  <div className="professional-card-header">
+
+                    <div className="professional-avatar">
+
+                      {profesional.nombre
+                        ?.charAt(0)
+                        ?.toUpperCase()}
+
+                      {profesional.apellido
+                        ?.charAt(0)
+                        ?.toUpperCase()}
+
+                    </div>
+
+                    {estadoCuenta ===
+                    'pendiente' ? (
+
+                      <span className="professional-status pending">
+                        Pendiente
+                      </span>
+
+                    ) : estadoCuenta ===
+                      'rechazado' ? (
+
+                      <span className="professional-status rejected">
+                        Rechazada
+                      </span>
+
+                    ) : (
+
+                      <span
+                        className={
+                          profesional.activo
+                            ? 'professional-status active'
+                            : 'professional-status inactive'
+                        }
+                      >
+                        {profesional.activo
+                          ? 'Activo'
+                          : 'Inactivo'}
+                      </span>
+
+                    )}
+
+                  </div>
+
+                  {/* INFO */}
+
+                  <div className="professional-card-body">
+
+                    <h2>
+                      {profesional.nombre}{' '}
+                      {profesional.apellido}
+                    </h2>
+
+                    <span className="professional-role">
+                      {profesional.profesion ||
+                        'Profesión sin especificar'}
+                    </span>
+
+                    <div className="professional-info">
+
+                      <div>
+
+                        <span>
+                          Email
+                        </span>
+
+                        <strong>
+                          {profesional.user
+                            ?.email ||
+                            'Sin email'}
+                        </strong>
+
+                      </div>
+
+                      <div>
+
+                        <span>
+                          Teléfono
+                        </span>
+
+                        <strong>
+                          {profesional.telefono ||
+                            'Sin teléfono'}
+                        </strong>
+
+                      </div>
+
+                      {estadoCuenta ===
+                        'pendiente' && (
+
+                        <div>
+
+                          <span>
+                            Solicitud
+                          </span>
+
+                          <strong>
+                            {mostrarFechaSolicitud(
+                              profesional
+                            )}
+                          </strong>
+
+                        </div>
+
+                      )}
+
+                    </div>
+
+                  </div>
+
+                  {/* SOLICITUD */}
+
+                  {estadoCuenta ===
+                    'pendiente' && (
+
+                    <div className="professional-request-actions">
+
+                      <button
+                        type="button"
+                        className="professional-request-approve"
+                        disabled={
+                          procesando
+                        }
+                        onClick={() =>
+                          handleAprobar(
+                            profesional
+                          )
+                        }
+                      >
+                        {procesando
+                          ? 'Procesando...'
+                          : '✓ Aprobar'}
+                      </button>
+
+                      <button
+                        type="button"
+                        className="professional-request-reject"
+                        disabled={
+                          procesando
+                        }
+                        onClick={() =>
+                          handleRechazar(
+                            profesional
+                          )
+                        }
+                      >
+                        Rechazar
+                      </button>
+
+                    </div>
+
+                  )}
+
+                  {/* PROFESIONAL APROBADO */}
+
+                  {estadoCuenta ===
+                    'aprobado' && (
+
+                    <div className="professional-actions">
+
+                      <button
+                        type="button"
+                        className="professional-edit"
+                        onClick={() =>
+                          handleEditar(
+                            profesional
+                          )
+                        }
+                      >
+                        Editar datos
+                      </button>
+
+                      <button
+                        type="button"
+                        className={
+                          profesional.activo
+                            ? 'professional-state danger'
+                            : 'professional-state success'
+                        }
+                        onClick={() =>
+                          handleCambiarEstado(
+                            profesional
+                          )
+                        }
+                        disabled={
+                          procesando
+                        }
+                      >
+                        {procesando
+                          ? 'Guardando...'
+                          : profesional.activo
+                          ? 'Desactivar'
+                          : 'Activar'}
+                      </button>
+
+                    </div>
+
+                  )}
+
+                  {/* RECHAZADO */}
+
+                  {estadoCuenta ===
+                    'rechazado' && (
+
+                    <div className="professional-rejected-message">
+                      Esta solicitud no tiene
+                      acceso a Nexo.
+                    </div>
+
+                  )}
+
+                </article>
+              )
+            }
           )}
 
         </section>
+
       )}
 
     </main>

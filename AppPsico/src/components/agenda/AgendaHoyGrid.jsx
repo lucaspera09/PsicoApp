@@ -3,7 +3,8 @@ import { useMemo, useState } from 'react'
 export default function AgendaHoyGrid({
   turnos,
   horariosSemanales,
-  onTurnoClick
+  onTurnoClick,
+  onRegistrarSesion
 }) {
   const hoy = new Date()
 
@@ -740,98 +741,125 @@ export default function AgendaHoyGrid({
                 []
 
               return (
-                <button
-                  key={turno._id}
-                  type="button"
-                  className={
-                    turno.esHorarioFijo
-                      ? 'day-turn-card fixed'
-                      : 'day-turn-card'
-                  }
-                  onClick={() =>
-                    onTurnoClick(
-                      turno
-                    )
-                  }
-                  style={{
-                    gridRow:
-                      `${filaInicio} / span ${duracion}`
-                  }}
+  <article
+    key={turno._id}
+    className={
+      turno.esHorarioFijo
+        ? 'day-turn-card fixed'
+        : 'day-turn-card'
+    }
+    onClick={() =>
+      onTurnoClick(turno)
+    }
+    style={{
+      gridRow:
+        `${filaInicio} / span ${duracion}`
+    }}
+  >
+
+    <div className="day-turn-header">
+
+      <strong>
+        {mostrarHora(
+          turno.fechaInicio
+        )}
+
+        {' – '}
+
+        {mostrarHora(
+          turno.fechaFin
+        )}
+      </strong>
+
+      {turno.esHorarioFijo && (
+        <span className="day-fixed-badge">
+          Horario fijo
+        </span>
+      )}
+
+    </div>
+
+    <div className="day-turn-patients">
+
+      {participantes.map(
+        (
+          participante,
+          index
+        ) => {
+          const paciente =
+            participante.paciente
+
+          return (
+            <div
+              key={
+                obtenerIdPaciente(
+                  paciente
+                ) ||
+                index
+              }
+              className="day-turn-patient"
+            >
+
+              <strong>
+                {paciente?.nombre}{' '}
+                {paciente?.apellido}
+              </strong>
+
+              {!turno.esHorarioFijo && (
+                <span
+                  className={`day-turn-status ${claseEstado(
+                    participante.estado
+                  )}`}
                 >
-
-                  <div className="day-turn-header">
-
-                    <strong>
-                      {mostrarHora(
-                        turno.fechaInicio
-                      )}
-                      {' – '}
-                      {mostrarHora(
-                        turno.fechaFin
-                      )}
-                    </strong>
-
-                    {turno.esHorarioFijo && (
-                      <span className="day-fixed-badge">
-                        Horario fijo
-                      </span>
-                    )}
-
-                  </div>
-
-                  <div className="day-turn-patients">
-
-                    {participantes.map(
-                      (
-                        participante,
-                        index
-                      ) => {
-                        const paciente =
-                          participante.paciente
-
-                        return (
-                          <div
-                            key={
-                              obtenerIdPaciente(
-                                paciente
-                              ) ||
-                              index
-                            }
-                            className="day-turn-patient"
-                          >
-
-                            <strong>
-                              {paciente?.nombre}{' '}
-                              {paciente?.apellido}
-                            </strong>
-
-                            {!turno.esHorarioFijo && (
-                              <span
-                                className={`day-turn-status ${claseEstado(
-                                  participante.estado
-                                )}`}
-                              >
-                                {mostrarEstado(
-                                  participante.estado
-                                )}
-                              </span>
-                            )}
-
-                          </div>
-                        )
-                      }
-                    )}
-
-                  </div>
-
-                  {participantes.length > 1 && (
-                    <span className="day-patient-count">
-                      {participantes.length}{' '}
-                      pacientes
-                    </span>
+                  {mostrarEstado(
+                    participante.estado
                   )}
+                </span>
+              )}
 
-                </button>
+            </div>
+          )
+        }
+      )}
+
+    </div>
+
+    {participantes.length > 1 && (
+      <span className="day-patient-count">
+        {participantes.length}{' '}
+        pacientes
+      </span>
+    )}
+
+    {participantes.some(
+      (participante) =>
+        turno.esHorarioFijo ||
+        participante.estado ===
+          'programado'
+    ) && (
+
+      <div className="day-turn-quick-actions">
+
+        <button
+          type="button"
+          className="day-turn-register-button"
+          onClick={(event) => {
+            event.stopPropagation()
+
+            onRegistrarSesion?.(
+              turno
+            )
+          }}
+        >
+          📝 Registrar sesión
+        </button>
+
+      </div>
+
+    )}
+
+  </article>
+
               )
             }
           )}

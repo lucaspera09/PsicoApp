@@ -1,0 +1,549 @@
+/* =========================
+   REGISTRO NEXO
+========================= */
+
+.register-page {
+  position: relative;
+
+  min-height: 100vh;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  overflow: hidden;
+
+  padding: 32px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #f4f1ff,
+      #faf9ff 50%,
+      #f1efff
+    );
+}
+
+.register-decor {
+  position: absolute;
+
+  border-radius: 50%;
+
+  pointer-events: none;
+}
+
+.register-decor-one {
+  width: 420px;
+  height: 420px;
+
+  top: -200px;
+  right: -140px;
+
+  background:
+    rgba(112, 72, 245, 0.08);
+}
+
+.register-decor-two {
+  width: 360px;
+  height: 360px;
+
+  left: -140px;
+  bottom: -190px;
+
+  background:
+    rgba(137, 92, 245, 0.07);
+}
+
+.register-card {
+  position: relative;
+
+  z-index: 2;
+
+  width: 100%;
+  max-width: 700px;
+
+  padding: 32px;
+
+  border:
+    1px solid rgba(
+      255,
+      255,
+      255,
+      0.9
+    );
+
+  border-radius: 26px;
+
+  background:
+    rgba(
+      255,
+      255,
+      255,
+      0.94
+    );
+
+  box-shadow:
+    0 28px 80px
+    rgba(
+      55,
+      42,
+      115,
+      0.12
+    );
+}
+
+
+/* MARCA */
+
+.register-brand {
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  margin-bottom: 28px;
+}
+
+.register-brand h1 {
+  margin: 0;
+
+  color: #211a4d;
+
+  font-size: 25px;
+
+  letter-spacing: -0.03em;
+}
+
+.register-brand p {
+  margin: 3px 0 0;
+
+  color:
+    var(--color-text-soft);
+
+  font-size: 10px;
+  font-weight: 600;
+}
+
+
+/* HEADING */
+
+.register-heading {
+  margin-bottom: 24px;
+}
+
+.register-heading > span {
+  display: block;
+
+  margin-bottom: 5px;
+
+  color:
+    var(--color-primary);
+
+  font-size: 9px;
+  font-weight: 850;
+
+  text-transform: uppercase;
+
+  letter-spacing: 0.06em;
+}
+
+.register-heading h2 {
+  margin: 0 0 5px;
+
+  font-size: 25px;
+}
+
+.register-heading p {
+  max-width: 500px;
+
+  margin: 0;
+
+  color:
+    var(--color-text-soft);
+
+  font-size: 11px;
+
+  line-height: 1.5;
+}
+
+
+/* FORM */
+
+.register-form {
+  display: flex;
+  flex-direction: column;
+
+  gap: 15px;
+}
+
+.register-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      2,
+      minmax(0, 1fr)
+    );
+
+  gap: 13px;
+}
+
+.register-field {
+  display: flex;
+  flex-direction: column;
+
+  gap: 6px;
+}
+
+.register-field label {
+  color:
+    var(--color-text);
+
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.register-field input {
+  width: 100%;
+
+  box-sizing: border-box;
+
+  min-height: 48px;
+
+  padding: 11px 12px;
+
+  border:
+    1px solid
+    var(--color-border);
+
+  border-radius: 12px;
+
+  outline: none;
+
+  background: white;
+
+  color:
+    var(--color-text);
+
+  font: inherit;
+
+  font-size: 12px;
+}
+
+.register-field input:focus {
+  border-color:
+    var(--color-primary);
+
+  box-shadow:
+    0 0 0 4px
+    var(--color-primary-soft);
+}
+
+
+/* PASSWORD */
+
+.register-password-wrapper {
+  display: flex;
+
+  border:
+    1px solid
+    var(--color-border);
+
+  border-radius: 12px;
+
+  background: white;
+}
+
+.register-password-wrapper:focus-within {
+  border-color:
+    var(--color-primary);
+
+  box-shadow:
+    0 0 0 4px
+    var(--color-primary-soft);
+}
+
+.register-password-wrapper input {
+  border: none;
+
+  box-shadow: none !important;
+}
+
+.register-password-wrapper button {
+  flex-shrink: 0;
+
+  margin-right: 7px;
+
+  border: none;
+
+  background:
+    transparent;
+
+  color:
+    var(--color-primary);
+
+  font-size: 9px;
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+
+/* ERROR */
+
+.register-error {
+  padding: 10px 12px;
+
+  border-radius: 10px;
+
+  background:
+    var(--color-danger-soft);
+
+  color:
+    var(--color-danger);
+
+  font-size: 10px;
+  font-weight: 700;
+}
+
+
+/* BOTÓN */
+
+.register-submit {
+  min-height: 50px;
+
+  margin-top: 4px;
+
+  border: none;
+
+  border-radius: 12px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #7048f5,
+      #895cf5
+    );
+
+  color: white;
+
+  font-size: 12px;
+  font-weight: 850;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 9px 22px
+    rgba(
+      112,
+      72,
+      245,
+      0.23
+    );
+}
+
+.register-submit:disabled {
+  opacity: 0.6;
+
+  cursor: not-allowed;
+}
+
+
+/* LOGIN LINK */
+
+.register-login-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 5px;
+
+  margin-top: 22px;
+
+  color:
+    var(--color-text-soft);
+
+  font-size: 10px;
+}
+
+.register-login-link a {
+  color:
+    var(--color-primary);
+
+  font-weight: 800;
+
+  text-decoration: none;
+}
+
+
+/* SUCCESS */
+
+.register-success-card {
+  position: relative;
+
+  z-index: 2;
+
+  width: 100%;
+  max-width: 470px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  padding: 42px 34px;
+
+  border-radius: 26px;
+
+  background: white;
+
+  box-shadow:
+    0 28px 80px
+    rgba(
+      55,
+      42,
+      115,
+      0.12
+    );
+
+  text-align: center;
+}
+
+.register-success-icon {
+  width: 50px;
+  height: 50px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin:
+    24px 0 12px;
+
+  border-radius: 50%;
+
+  background:
+    var(--color-success-soft);
+
+  color:
+    var(--color-success);
+
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.register-success-card h1 {
+  margin: 0;
+
+  font-size: 25px;
+}
+
+.register-success-card > p {
+  max-width: 350px;
+
+  margin:
+    8px 0 0;
+
+  color:
+    var(--color-text-soft);
+
+  font-size: 11px;
+
+  line-height: 1.5;
+}
+
+.register-success-detail {
+  padding: 12px;
+
+  margin-top: 16px !important;
+
+  border-radius: 12px;
+
+  background:
+    var(--color-primary-soft);
+}
+
+.register-back-login {
+  width: 100%;
+
+  box-sizing: border-box;
+
+  margin-top: 24px;
+
+  padding: 12px;
+
+  border-radius: 11px;
+
+  background:
+    var(--color-primary);
+
+  color: white;
+
+  font-size: 11px;
+  font-weight: 800;
+
+  text-decoration: none;
+}
+
+
+/* MOBILE */
+
+@media (
+  max-width: 650px
+) {
+
+  .register-page {
+    align-items: stretch;
+
+    min-height: 100dvh;
+
+    padding: 0;
+
+    background: white;
+  }
+
+  .register-decor {
+    display: none;
+  }
+
+  .register-card {
+    max-width: none;
+
+    min-height: 100dvh;
+
+    box-sizing: border-box;
+
+    padding:
+      24px 20px;
+
+    border: none;
+    border-radius: 0;
+
+    box-shadow: none;
+  }
+
+  .register-grid {
+    grid-template-columns:
+      1fr;
+  }
+
+  .register-brand {
+    margin-bottom: 34px;
+  }
+
+  .register-submit {
+    min-height: 54px;
+  }
+
+  .register-success-card {
+    min-height: 100dvh;
+
+    box-sizing: border-box;
+
+    justify-content: center;
+
+    border-radius: 0;
+
+    box-shadow: none;
+  }
+
+}

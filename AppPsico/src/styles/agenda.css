@@ -2663,3 +2663,70 @@
     align-items: flex-start;
   }
 }
+
+/* =========================
+   REGISTRO RÁPIDO DE SESIÓN
+========================= */
+
+.day-turn-quick-actions {
+  display: flex;
+
+  margin-top: auto;
+  padding-top: 8px;
+}
+
+.day-turn-register-button {
+  width: 100%;
+
+  padding: 8px 10px;
+
+  border: 1px solid
+    rgba(108, 99, 217, 0.25);
+
+  border-radius: 9px;
+
+  background:
+    var(--color-primary-soft);
+
+  color:
+    var(--color-primary);
+
+  font-size: 10px;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s,
+    transform 0.15s;
+}
+
+.day-turn-register-button:hover {
+  transform:
+    translateY(-1px);
+}
+
+/*
+  Como day-turn-card antes era
+  un button y ahora es article,
+  mantenemos el comportamiento
+  de elemento clickeable.
+*/
+
+.day-turn-card {
+  cursor: pointer;
+}
+.turn-session-area-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 14px;
+  min-width: 14px;
+
+  font-weight: 900;
+}
+
+.turn-session-area-name {
+  display: inline-block;
+}

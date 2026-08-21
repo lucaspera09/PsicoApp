@@ -1,4 +1,14 @@
-import { useEffect, useMemo, useState } from 'react'
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from 'react'
+
+import {
+  useLocation,
+  useNavigate
+} from 'react-router'
 
 import api from '../api/api.js'
 
@@ -11,6 +21,14 @@ import AgendaSemanalGrid from '../components/agenda/AgendaSemanalGrid.jsx'
 import AgendaMensualGrid from '../components/agenda/AgendaMensualGrid.jsx'
 
 export default function AgendaPage() {
+  const location =
+  useLocation()
+
+const navigate =
+  useNavigate()
+
+const accesoRapidoProcesado =
+  useRef(false)
   const [turnos, setTurnos] = useState([])
 
   const [
@@ -360,7 +378,449 @@ export default function AgendaPage() {
       )
     }
   }
+  /*
+  ACCESO RÁPIDO DESDE EL INICIO
+*/
 
+/*
+  ACCESOS RÁPIDOS A REGISTRAR SESIÓN
+
+  Puede venir:
+  1. Un turno desde el Dashboard.
+  2. Un paciente desde su ficha.
+*/
+
+useEffect(() => {
+  if (
+    loading ||
+    accesoRapidoProcesado.current
+  ) {
+    return
+  }
+
+  const turnoRecibido =
+    location.state
+      ?.registrarSesion
+
+  const pacienteSesionId =
+    location.state
+      ?.pacienteSesionId
+
+  if (
+    !turnoRecibido &&
+    !pacienteSesionId
+  ) {
+    return
+  }
+
+  accesoRapidoProcesado.current =
+    true
+
+  const limpiarNavegacion = () => {
+    navigate(
+      '/agenda',
+      {
+        replace: true,
+        state: null
+      }
+    )
+  }
+
+  const obtenerPacienteId = (
+    paciente
+  ) => {
+    return (
+      paciente?._id ||
+      paciente
+    )?.toString()
+  }
+
+  const buscarParticipante = (
+    turno,
+    pacienteId = null
+  ) => {
+    const participantes =
+      turno.participantes ||
+      []
+
+    /*
+      Si venimos desde la ficha,
+      buscamos específicamente
+      ese paciente.
+    */
+    if (pacienteId) {
+      return participantes.find(
+        (participante) =>
+          obtenerPacienteId(
+            participante.paciente
+          ) ===
+          pacienteId.toString()
+      )
+    }
+
+    /*
+      Si venimos desde el Dashboard,
+      elegimos uno pendiente.
+    */
+    return (
+      participantes.find(
+        (participante) =>
+          participante.estado ===
+          'programado'
+      ) ||
+      participantes[0]
+    )
+  }
+
+  const esHoy = (
+    fecha
+  ) => {
+    const fechaTurno =
+      new Date(fecha)
+
+    const hoy =
+      new Date()
+
+    return (
+      fechaTurno.getFullYear() ===
+        hoy.getFullYear() &&
+      fechaTurno.getMonth() ===
+        hoy.getMonth() &&
+      fechaTurno.getDate() ===
+        hoy.getDate()
+    )
+  }
+
+  const abrirDesdeTurno = async (
+    turno,
+    pacienteId = null
+  ) => {
+    const participante =
+      buscarParticipante(
+        turno,
+        pacienteId
+      )
+
+    if (!participante) {
+      alert(
+        'No se encontró al paciente dentro del turno.'
+      )
+
+      limpiarNavegacion()
+
+      return
+    }
+
+    await handleRegistrarSesion(
+      turno,
+      participante
+    )
+
+    limpiarNavegacion()
+  }
+
+  const buscarTurnoPacienteHoy =
+    async () => {
+
+      /*
+        PRIMERO:
+        buscamos un turno real de hoy.
+      */
+
+      const turnoReal =
+        turnos.find(
+          (turno) => {
+            if (
+              !turno.fechaInicio ||
+              !esHoy(
+                turno.fechaInicio
+              )
+            ) {
+              return false
+            }
+
+            return (
+              turno.participantes ||
+              []
+            ).some(
+              (participante) =>
+                obtenerPacienteId(
+                  participante.paciente
+                ) ===
+                pacienteSesionId.toString()
+            )
+          }
+        )
+
+      if (turnoReal) {
+        await abrirDesdeTurno(
+          turnoReal,
+          pacienteSesionId
+        )
+
+        return
+      }
+
+      /*
+        SEGUNDO:
+        revisamos horarios fijos de hoy.
+      */
+
+      const hoy =
+        new Date()
+
+      hoy.setHours(
+        0,
+        0,
+        0,
+        0
+      )
+
+      const horario =
+        horariosSemanales.find(
+          (item) => {
+            if (!item.activo) {
+              return false
+            }
+
+            if (
+              item.diaSemana !==
+              hoy.getDay()
+            ) {
+              return false
+            }
+
+            if (item.fechaDesde) {
+              const desde =
+                new Date(
+                  item.fechaDesde
+                )
+
+              desde.setHours(
+                0,
+                0,
+                0,
+                0
+              )
+
+              if (hoy < desde) {
+                return false
+              }
+            }
+
+            if (item.fechaHasta) {
+              const hasta =
+                new Date(
+                  item.fechaHasta
+                )
+
+              hasta.setHours(
+                23,
+                59,
+                59,
+                999
+              )
+
+              if (hoy > hasta) {
+                return false
+              }
+            }
+
+            const pacientes =
+              Array.isArray(
+                item.pacientes
+              )
+                ? item.pacientes
+                : item.paciente
+                ? [item.paciente]
+                : []
+
+            return pacientes.some(
+              (paciente) =>
+                obtenerPacienteId(
+                  paciente
+                ) ===
+                pacienteSesionId.toString()
+            )
+          }
+        )
+
+      if (horario) {
+        const [
+          horaInicio,
+          minutoInicio
+        ] =
+          horario.horaInicio
+            .split(':')
+            .map(Number)
+
+        const [
+          horaFin,
+          minutoFin
+        ] =
+          horario.horaFin
+            .split(':')
+            .map(Number)
+
+        const fechaInicio =
+          new Date()
+
+        fechaInicio.setHours(
+          horaInicio,
+          minutoInicio,
+          0,
+          0
+        )
+
+        const fechaFin =
+          new Date()
+
+        fechaFin.setHours(
+          horaFin,
+          minutoFin,
+          0,
+          0
+        )
+
+        const pacientes =
+          Array.isArray(
+            horario.pacientes
+          )
+            ? horario.pacientes
+            : horario.paciente
+            ? [horario.paciente]
+            : []
+
+        const turnoVirtual = {
+          _id:
+            `horario-${horario._id}-${hoy
+              .toISOString()
+              .slice(0, 10)}`,
+
+          horarioSemanalId:
+            horario._id,
+
+          esHorarioFijo:
+            true,
+
+          fechaInicio:
+            fechaInicio.toISOString(),
+
+          fechaFin:
+            fechaFin.toISOString(),
+
+          participantes:
+            pacientes.map(
+              (paciente) => ({
+                paciente,
+                estado:
+                  'programado'
+              })
+            )
+        }
+
+        await abrirDesdeTurno(
+          turnoVirtual,
+          pacienteSesionId
+        )
+
+        return
+      }
+
+      /*
+        NO TIENE TURNO HOY
+      */
+
+      alert(
+        'Este paciente no tiene ningún turno programado para hoy.'
+      )
+
+      limpiarNavegacion()
+    }
+
+  const ejecutar = async () => {
+    try {
+
+      /*
+        DESDE DASHBOARD
+      */
+
+      if (turnoRecibido) {
+        await abrirDesdeTurno(
+          turnoRecibido
+        )
+
+        return
+      }
+
+      /*
+        DESDE FICHA DEL PACIENTE
+      */
+
+      if (pacienteSesionId) {
+        await buscarTurnoPacienteHoy()
+      }
+
+    } catch (error) {
+      console.error(
+        'Error al abrir el registro rápido:',
+        error
+      )
+
+      alert(
+        error.response?.data?.message ||
+        error.message ||
+        'No se pudo abrir el registro de la sesión'
+      )
+
+      limpiarNavegacion()
+    }
+  }
+
+  ejecutar()
+
+}, [
+  loading,
+  location.state,
+  navigate,
+  turnos,
+  horariosSemanales
+])
+
+  const handleRegistrarSesionRapida = (
+  turno
+) => {
+  const participantes =
+    turno.participantes || []
+
+  /*
+    Elegimos primero un paciente
+    que todavía esté programado.
+
+    Si es horario fijo todos vienen
+    como programados.
+  */
+  const participanteInicial =
+    participantes.find(
+      (participante) =>
+        participante.estado ===
+        'programado'
+    ) ||
+    participantes[0]
+
+  if (!participanteInicial) {
+    alert(
+      'Este turno no tiene pacientes'
+    )
+
+    return
+  }
+
+  handleRegistrarSesion(
+    turno,
+    participanteInicial
+  )
+}
   /*
     SESIONES CREADAS
 
@@ -973,16 +1433,19 @@ export default function AgendaPage() {
         {vista === 'hoy' && (
 
           <AgendaHoyGrid
-            turnos={
-              turnosOrdenados
-            }
-            horariosSemanales={
-              horariosSemanales
-            }
-            onTurnoClick={
-              handleSeleccionarTurno
-            }
-          />
+  turnos={
+    turnosOrdenados
+  }
+  horariosSemanales={
+    horariosSemanales
+  }
+  onTurnoClick={
+    handleSeleccionarTurno
+  }
+  onRegistrarSesion={
+    handleRegistrarSesionRapida
+  }
+/>
 
         )}
 

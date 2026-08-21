@@ -652,3 +652,181 @@
     min-height: 50px;
   }
 }
+
+/* =========================
+   SOLICITUDES PROFESIONALES
+========================= */
+
+.professionals-tabs {
+  display: flex;
+  gap: 6px;
+
+  margin: 18px 0;
+
+  padding: 6px;
+
+  overflow-x: auto;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+
+  background: var(--color-surface);
+
+  box-shadow: var(--shadow-sm);
+}
+
+.professionals-tab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 6px;
+
+  min-width: 130px;
+
+  padding: 9px 13px;
+
+  border: none;
+  border-radius: 8px;
+
+  background: transparent;
+
+  color: var(--color-text-soft);
+
+  font-size: 10px;
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+.professionals-tab.active {
+  background: var(--color-primary-soft);
+
+  color: var(--color-primary);
+}
+
+.professionals-tab > span {
+  min-width: 20px;
+  height: 20px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0 5px;
+
+  border-radius: 999px;
+
+  background: rgba(112, 72, 245, 0.12);
+
+  font-size: 8px;
+}
+
+
+/* PENDIENTE */
+
+.professional-request-card {
+  border-color:
+    rgba(112, 72, 245, 0.25);
+}
+
+.professional-status.pending {
+  background:
+    var(--color-primary-soft);
+
+  color:
+    var(--color-primary);
+}
+
+.professional-status.rejected {
+  background:
+    var(--color-danger-soft);
+
+  color:
+    var(--color-danger);
+}
+
+
+/* ACCIONES SOLICITUD */
+
+.professional-request-actions {
+  display: grid;
+
+  grid-template-columns:
+    1fr 1fr;
+
+  gap: 8px;
+
+  padding-top: 12px;
+
+  border-top:
+    1px solid
+    var(--color-border);
+}
+
+.professional-request-actions button {
+  min-height: 39px;
+
+  border-radius: 9px;
+
+  font-size: 10px;
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+.professional-request-approve {
+  border:
+    1px solid
+    var(--color-primary);
+
+  background:
+    var(--color-primary);
+
+  color: white;
+}
+
+.professional-request-reject {
+  border:
+    1px solid
+    var(--color-border);
+
+  background:
+    var(--color-surface);
+
+  color:
+    var(--color-danger);
+}
+
+.professional-request-actions button:disabled {
+  opacity: 0.55;
+
+  cursor: not-allowed;
+}
+
+.professional-rejected-message {
+  padding: 10px;
+
+  border-radius: 9px;
+
+  background:
+    var(--color-danger-soft);
+
+  color:
+    var(--color-danger);
+
+  font-size: 9px;
+  font-weight: 700;
+
+  text-align: center;
+}
+
+@media (max-width: 600px) {
+  .professionals-tabs {
+    justify-content: flex-start;
+  }
+
+  .professionals-tab {
+    flex: 0 0 auto;
+  }
+}

@@ -1,5 +1,12 @@
-import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router'
+import {
+  useEffect,
+  useState
+} from 'react'
+
+import {
+  Link,
+  useParams
+} from 'react-router'
 
 import api from '../api/api.js'
 
@@ -31,6 +38,11 @@ export default function PacienteDetallePage() {
     editandoClinica,
     setEditandoClinica
   ] = useState(false)
+
+  const [
+    seccionActiva,
+    setSeccionActiva
+  ] = useState('resumen')
 
   useEffect(() => {
     const cargarPaciente = async () => {
@@ -265,358 +277,648 @@ export default function PacienteDetallePage() {
 
         </div>
 
-      </section>
+        {/* ACCIONES RÁPIDAS */}
 
-      {/* RESUMEN */}
+        <div className="patient-detail-quick-actions">
 
-      <section className="patient-detail-summary-grid">
-
-        <div className="patient-detail-summary-card">
-
-          <span>
-            Fecha de nacimiento
-          </span>
-
-          <strong>
-            {formatearFecha(
-              paciente.fechaNacimiento
-            )}
-          </strong>
-
-        </div>
-
-        <div className="patient-detail-summary-card">
-
-          <span>
-            Edad
-          </span>
-
-          <strong>
-            {edad !== null
-              ? `${edad} años`
-              : 'Sin fecha'}
-          </strong>
-
-        </div>
-
-        <div className="patient-detail-summary-card">
-
-          <span>
-            Fecha de ingreso
-          </span>
-
-          <strong>
-            {formatearFecha(
-              paciente.fechaIngreso
-            )}
-          </strong>
-
-        </div>
-
-      </section>
-
-      {/* DATOS PERSONALES */}
-
-      <section className="patient-detail-card">
-
-        <div className="patient-detail-section-header">
-
-          <div>
-
-            <p className="patient-detail-section-eyebrow">
-              Información general
-            </p>
-
-            <h2>
-              Datos personales
-            </h2>
-
-          </div>
-
-        </div>
-
-        <div className="patient-detail-data-grid">
-
-          <div className="patient-detail-data-item">
-
-            <span>
-              Nombre
-            </span>
-
-            <strong>
-              {paciente.nombre}
-            </strong>
-
-          </div>
-
-          <div className="patient-detail-data-item">
-
-            <span>
-              Apellido
-            </span>
-
-            <strong>
-              {paciente.apellido}
-            </strong>
-
-          </div>
-
-          <div className="patient-detail-data-item">
-
-            <span>
-              Documento
-            </span>
-
-            <strong>
-              {paciente.documento ||
-                'Sin documento'}
-            </strong>
-
-          </div>
-
-          <div className="patient-detail-data-item">
-
-            <span>
-              Nacimiento
-            </span>
-
-            <strong>
-              {formatearFecha(
-                paciente.fechaNacimiento
-              )}
-            </strong>
-
-          </div>
-
-          <div className="patient-detail-data-item">
-
-            <span>
-              Edad
-            </span>
-
-            <strong>
-              {edad !== null
-                ? `${edad} años`
-                : 'Sin fecha'}
-            </strong>
-
-          </div>
-
-          <div className="patient-detail-data-item">
-
-            <span>
-              Ingreso
-            </span>
-
-            <strong>
-              {formatearFecha(
-                paciente.fechaIngreso
-              )}
-            </strong>
-
-          </div>
-
-        </div>
-
-      </section>
-
-      {/* INFORMACIÓN CLÍNICA */}
-
-      <section className="patient-detail-card">
-
-        <div className="patient-detail-section-header">
-
-          <div>
-
-            <p className="patient-detail-section-eyebrow">
-              Historia clínica
-            </p>
-
-            <h2>
-              Información clínica
-            </h2>
-
-          </div>
-
-          {!editandoClinica && (
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={() =>
-                setEditandoClinica(
-                  true
-                )
-              }
-            >
-              Editar información clínica
-            </button>
-          )}
-
-        </div>
-
-        {editandoClinica ? (
-
-          <EditarInformacionClinicaForm
-            paciente={paciente}
-            onUpdated={(
-              pacienteActualizado
-            ) => {
-              setPaciente(
-                pacienteActualizado
-              )
-
-              setEditandoClinica(
-                false
-              )
+          <Link
+            to="/agenda"
+            state={{
+              pacienteSesionId:
+                paciente._id
             }}
-            onCancel={() =>
-              setEditandoClinica(
-                false
-              )
-            }
-          />
+            className="patient-detail-quick-action primary"
+          >
+            📝 Registrar sesión
+          </Link>
 
-        ) : (
+          <Link
+            to="/nota-rapida"
+            state={{
+              pacienteInicial:
+                paciente
+            }}
+            className="patient-detail-quick-action"
+          >
+            ✍️ Nueva nota
+          </Link>
 
-          <div className="patient-clinical-grid">
+        </div>
 
-            <div className="patient-clinical-item">
+      </section>
 
-              <span>
-                Enfermedades
-              </span>
+      {/* PESTAÑAS */}
 
-              <p>
-                {mostrarLista(
-                  paciente.enfermedades,
-                  'Ninguna registrada'
-                )}
-              </p>
+      <nav className="patient-tabs">
+
+        <button
+          type="button"
+          className={
+            seccionActiva ===
+            'resumen'
+              ? 'patient-tab active'
+              : 'patient-tab'
+          }
+          onClick={() =>
+            setSeccionActiva(
+              'resumen'
+            )
+          }
+        >
+          Resumen
+        </button>
+
+        <button
+          type="button"
+          className={
+            seccionActiva ===
+            'sesiones'
+              ? 'patient-tab active'
+              : 'patient-tab'
+          }
+          onClick={() =>
+            setSeccionActiva(
+              'sesiones'
+            )
+          }
+        >
+          Sesiones
+        </button>
+
+        <button
+          type="button"
+          className={
+            seccionActiva ===
+            'notas'
+              ? 'patient-tab active'
+              : 'patient-tab'
+          }
+          onClick={() =>
+            setSeccionActiva(
+              'notas'
+            )
+          }
+        >
+          Notas
+        </button>
+
+        <button
+          type="button"
+          className={
+            seccionActiva ===
+            'objetivos'
+              ? 'patient-tab active'
+              : 'patient-tab'
+          }
+          onClick={() =>
+            setSeccionActiva(
+              'objetivos'
+            )
+          }
+        >
+          Objetivos
+        </button>
+
+        <button
+          type="button"
+          className={
+            seccionActiva ===
+            'clinica'
+              ? 'patient-tab active'
+              : 'patient-tab'
+          }
+          onClick={() =>
+            setSeccionActiva(
+              'clinica'
+            )
+          }
+        >
+          Clínica
+        </button>
+
+      </nav>
+
+      {/* =====================
+          RESUMEN
+      ====================== */}
+
+      {seccionActiva ===
+        'resumen' && (
+
+        <section className="patient-tab-content">
+
+          {/* DATOS */}
+
+          <div className="patient-detail-card">
+
+            <div className="patient-detail-section-header">
+
+              <div>
+
+                <p className="patient-detail-section-eyebrow">
+                  Información general
+                </p>
+
+                <h2>
+                  Datos del paciente
+                </h2>
+
+              </div>
 
             </div>
 
-            <div className="patient-clinical-item">
+            <div className="patient-detail-data-grid">
 
-              <span>
-                Alergias
-              </span>
+              <div className="patient-detail-data-item">
 
-              <p>
-                {mostrarLista(
-                  paciente.alergias,
-                  'Ninguna registrada'
-                )}
-              </p>
+                <span>
+                  Nombre completo
+                </span>
+
+                <strong>
+                  {paciente.nombre}{' '}
+                  {paciente.apellido}
+                </strong>
+
+              </div>
+
+              <div className="patient-detail-data-item">
+
+                <span>
+                  Documento
+                </span>
+
+                <strong>
+                  {paciente.documento ||
+                    'Sin documento'}
+                </strong>
+
+              </div>
+
+              <div className="patient-detail-data-item">
+
+                <span>
+                  Edad
+                </span>
+
+                <strong>
+                  {edad !== null
+                    ? `${edad} años`
+                    : 'Sin fecha'}
+                </strong>
+
+              </div>
+
+              <div className="patient-detail-data-item">
+
+                <span>
+                  Nacimiento
+                </span>
+
+                <strong>
+                  {formatearFecha(
+                    paciente.fechaNacimiento
+                  )}
+                </strong>
+
+              </div>
+
+              <div className="patient-detail-data-item">
+
+                <span>
+                  Fecha de ingreso
+                </span>
+
+                <strong>
+                  {formatearFecha(
+                    paciente.fechaIngreso
+                  )}
+                </strong>
+
+              </div>
 
             </div>
 
-            <div className="patient-clinical-item">
+          </div>
+
+          {/* INFORMACIÓN IMPORTANTE */}
+
+          <div className="patient-overview-important">
+
+            <div className="patient-overview-important-header">
 
               <span>
-                Medicamentos
+                !
               </span>
 
-              <p>
-                {mostrarLista(
-                  paciente.medicamentos,
-                  'Ninguno registrado'
-                )}
-              </p>
+              <div>
+                <strong>
+                  Información importante
+                </strong>
+
+                <p>
+                  Datos que conviene tener
+                  presentes rápidamente.
+                </p>
+              </div>
 
             </div>
 
-            <div className="patient-clinical-item">
+            <div className="patient-overview-important-grid">
 
-              <span>
-                Antecedentes
-              </span>
+              <div>
+                <span>
+                  Alergias
+                </span>
 
-              <p>
-                {paciente.antecedentes ||
-                  'Sin antecedentes registrados'}
-              </p>
+                <strong>
+                  {mostrarLista(
+                    paciente.alergias,
+                    'Ninguna registrada'
+                  )}
+                </strong>
+              </div>
+
+              <div>
+                <span>
+                  Medicamentos
+                </span>
+
+                <strong>
+                  {mostrarLista(
+                    paciente.medicamentos,
+                    'Ninguno registrado'
+                  )}
+                </strong>
+              </div>
+
+              <div>
+                <span>
+                  Información importante
+                </span>
+
+                <strong>
+                  {paciente.informacionImportante ||
+                    'Sin información registrada'}
+                </strong>
+              </div>
 
             </div>
 
-            <div className="patient-clinical-item full">
+          </div>
 
-              <span>
-                Información importante
-              </span>
+          {/* RESPONSABLES */}
 
-              <p>
-                {paciente.informacionImportante ||
-                  'Sin información registrada'}
-              </p>
+          <div className="patient-overview-section">
+
+            <div className="patient-detail-content-heading">
+
+              <div className="patient-detail-content-icon">
+                ♡
+              </div>
+
+              <div>
+
+                <span>
+                  Familia y referentes
+                </span>
+
+                <h2>
+                  Responsables
+                </h2>
+
+                <p>
+                  Personas vinculadas
+                  al paciente.
+                </p>
+
+              </div>
 
             </div>
 
-            <div className="patient-clinical-item full">
+            <div className="patient-detail-module">
+
+              <ResponsablesPaciente
+                pacienteId={
+                  paciente._id
+                }
+              />
+
+            </div>
+
+          </div>
+
+        </section>
+
+      )}
+
+      {/* =====================
+          SESIONES
+      ====================== */}
+
+      {seccionActiva ===
+        'sesiones' && (
+
+        <section className="patient-tab-content">
+
+          <div className="patient-detail-content-heading">
+
+            <div className="patient-detail-content-icon">
+              📝
+            </div>
+
+            <div>
 
               <span>
-                Observaciones generales
+                Seguimiento
               </span>
 
+              <h2>
+                Sesiones
+              </h2>
+
               <p>
-                {paciente.observacionesGenerales ||
-                  'Sin observaciones'}
+                Registro de lo trabajado
+                en cada atención.
               </p>
 
             </div>
 
           </div>
 
-        )}
+          <div className="patient-detail-module patient-detail-sessions">
 
-      </section>
+            <SesionesPaciente
+              pacienteId={
+                paciente._id
+              }
+            />
 
-      {/* RESPONSABLES */}
+          </div>
 
-      <section className="patient-detail-module">
+        </section>
 
-        <ResponsablesPaciente
-          pacienteId={
-            paciente._id
-          }
-        />
+      )}
 
-      </section>
+      {/* =====================
+          NOTAS
+      ====================== */}
 
-      {/* NOTAS */}
+      {seccionActiva ===
+        'notas' && (
 
-      <section className="patient-detail-module">
+        <section className="patient-tab-content">
 
-        <NotasPaciente
-          pacienteId={
-            paciente._id
-          }
-        />
+          <div className="patient-detail-content-heading">
 
-      </section>
+            <div className="patient-detail-content-icon">
+              ✍️
+            </div>
 
-      {/* PLANES */}
+            <div>
 
-      <section className="patient-detail-module">
+              <span>
+                Registro libre
+              </span>
 
-        <PlanesTrabajoPaciente
-          pacienteId={
-            paciente._id
-          }
-        />
+              <h2>
+                Notas y conversaciones
+              </h2>
 
-      </section>
+              <p>
+                Entrevistas, llamadas,
+                comentarios de padres
+                y observaciones.
+              </p>
 
-      {/* SESIONES */}
+            </div>
 
-      <section className="patient-detail-module patient-detail-sessions">
+          </div>
 
-        <SesionesPaciente
-          pacienteId={
-            paciente._id
-          }
-        />
+          <div className="patient-detail-module">
 
-      </section>
+            <NotasPaciente
+              pacienteId={
+                paciente._id
+              }
+            />
+
+          </div>
+
+        </section>
+
+      )}
+
+      {/* =====================
+          OBJETIVOS
+      ====================== */}
+
+      {seccionActiva ===
+        'objetivos' && (
+
+        <section className="patient-tab-content">
+
+          <div className="patient-detail-content-heading">
+
+            <div className="patient-detail-content-icon">
+              ◎
+            </div>
+
+            <div>
+
+              <span>
+                Seguimiento terapéutico
+              </span>
+
+              <h2>
+                Objetivos de trabajo
+              </h2>
+
+              <p>
+                Planes, objetivos
+                y evolución.
+              </p>
+
+            </div>
+
+          </div>
+
+          <div className="patient-detail-module">
+
+            <PlanesTrabajoPaciente
+              pacienteId={
+                paciente._id
+              }
+            />
+
+          </div>
+
+        </section>
+
+      )}
+
+      {/* =====================
+          CLÍNICA
+      ====================== */}
+
+      {seccionActiva ===
+        'clinica' && (
+
+        <section className="patient-tab-content">
+
+          <div className="patient-detail-card">
+
+            <div className="patient-detail-section-header">
+
+              <div>
+
+                <p className="patient-detail-section-eyebrow">
+                  Historia clínica
+                </p>
+
+                <h2>
+                  Información clínica
+                </h2>
+
+              </div>
+
+              {!editandoClinica && (
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() =>
+                    setEditandoClinica(
+                      true
+                    )
+                  }
+                >
+                  Editar
+                </button>
+              )}
+
+            </div>
+
+            {editandoClinica ? (
+
+              <EditarInformacionClinicaForm
+                paciente={
+                  paciente
+                }
+                onUpdated={(
+                  pacienteActualizado
+                ) => {
+                  setPaciente(
+                    pacienteActualizado
+                  )
+
+                  setEditandoClinica(
+                    false
+                  )
+                }}
+                onCancel={() =>
+                  setEditandoClinica(
+                    false
+                  )
+                }
+              />
+
+            ) : (
+
+              <div className="patient-clinical-grid">
+
+                <div className="patient-clinical-item">
+
+                  <span>
+                    Enfermedades
+                  </span>
+
+                  <p>
+                    {mostrarLista(
+                      paciente.enfermedades,
+                      'Ninguna registrada'
+                    )}
+                  </p>
+
+                </div>
+
+                <div className="patient-clinical-item">
+
+                  <span>
+                    Alergias
+                  </span>
+
+                  <p>
+                    {mostrarLista(
+                      paciente.alergias,
+                      'Ninguna registrada'
+                    )}
+                  </p>
+
+                </div>
+
+                <div className="patient-clinical-item">
+
+                  <span>
+                    Medicamentos
+                  </span>
+
+                  <p>
+                    {mostrarLista(
+                      paciente.medicamentos,
+                      'Ninguno registrado'
+                    )}
+                  </p>
+
+                </div>
+
+                <div className="patient-clinical-item">
+
+                  <span>
+                    Antecedentes
+                  </span>
+
+                  <p>
+                    {paciente.antecedentes ||
+                      'Sin antecedentes registrados'}
+                  </p>
+
+                </div>
+
+                <div className="patient-clinical-item full">
+
+                  <span>
+                    Información importante
+                  </span>
+
+                  <p>
+                    {paciente.informacionImportante ||
+                      'Sin información registrada'}
+                  </p>
+
+                </div>
+
+                <div className="patient-clinical-item full">
+
+                  <span>
+                    Observaciones generales
+                  </span>
+
+                  <p>
+                    {paciente.observacionesGenerales ||
+                      'Sin observaciones'}
+                  </p>
+
+                </div>
+
+              </div>
+
+            )}
+
+          </div>
+
+        </section>
+
+      )}
 
     </main>
   )

@@ -18,6 +18,7 @@ import AgendaPage from './pages/AgendaPage.jsx'
 import ProfesionalesPage from './pages/ProfesionalesPage.jsx'
 import HorariosSemanalesPage from './pages/HorariosSemanalesPage.jsx'
 import NotaRapidaPage from './pages/NotaRapidaPage.jsx'
+import RegistroPage from './pages/RegistroPage.jsx'
 
 import {
   loadCurrentUser
@@ -53,6 +54,14 @@ function App() {
           }
         />
 
+          <Route
+  path="/registro"
+  element={
+    user
+      ? <Navigate to="/" replace />
+      : <RegistroPage />
+  }
+/>
         {/* RUTAS PROTEGIDAS GENERALES */}
 
         <Route
