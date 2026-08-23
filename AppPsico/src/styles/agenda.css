@@ -1519,7 +1519,7 @@
 }
 
 .day-turn-patient > strong {
-  font-size: 11px;
+  font-size: 10px;
 }
 
 .day-turn-status {
@@ -1571,7 +1571,12 @@
 
 /* MOBILE */
 
+/* =========================
+   AGENDA DIARIA - MOBILE
+========================= */
+
 @media (max-width: 768px) {
+
   .day-agenda {
     max-width: none;
   }
@@ -1581,6 +1586,8 @@
 
     grid-template-columns:
       42px 1fr 42px;
+
+    gap: 7px;
   }
 
   .day-agenda-title {
@@ -1593,6 +1600,9 @@
     width: 100%;
   }
 
+
+  /* CALENDARIO */
+
   .day-agenda-calendar {
     grid-template-columns:
       48px minmax(0, 1fr);
@@ -1600,26 +1610,188 @@
     border-radius: 12px;
   }
 
+
+  /*
+    Antes cada media hora tenía
+    34px.
+
+    Ahora le damos 42px.
+
+    Una sesión de 1 hora tendrá
+    aproximadamente 84px.
+  */
+
   .day-time-column,
   .day-turn-column {
     grid-template-rows:
       repeat(
         var(--day-blocks),
-        34px
+        42px
       );
   }
 
+
+  /* HORAS */
+
+  .day-time-cell {
+    padding-top: 5px;
+
+    font-size: 9px;
+  }
+
+
+  /* TARJETA */
+
   .day-turn-card {
+    min-height: 0;
+
     margin: 2px 4px;
 
     padding: 5px 7px;
+
+    overflow: hidden;
+
+    border-radius: 10px;
   }
+
+
+  /* CABECERA */
+
+  .day-turn-header {
+    align-items: flex-start;
+
+    gap: 5px;
+
+    margin-bottom: 3px;
+  }
+
+  .day-turn-header > strong {
+    flex: 1;
+
+    min-width: 0;
+
+    font-size: 10px;
+    line-height: 1.15;
+  }
+
+
+  /* HORARIO FIJO */
+
+  .day-fixed-badge {
+    flex-shrink: 0;
+
+    padding: 2px 5px;
+
+    font-size: 7px;
+
+    white-space: nowrap;
+  }
+
+
+  /* PACIENTES */
 
   .day-turn-patients {
+    display: flex;
+
     flex-direction: column;
 
-    gap: 3px;
+    flex-wrap: nowrap;
+
+    gap: 1px;
   }
+
+  .day-turn-patient {
+    width: 100%;
+
+    min-width: 0;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 4px;
+
+    line-height: 1.1;
+  }
+
+  .day-turn-patient > strong {
+    min-width: 0;
+
+    overflow: hidden;
+
+    color: var(--color-text);
+
+    font-size: 10px;
+    font-weight: 750;
+
+    line-height: 1.15;
+
+    white-space: nowrap;
+
+    text-overflow: ellipsis;
+  }
+
+
+  /* ESTADO */
+
+  .day-turn-status {
+    flex-shrink: 0;
+
+    padding: 1px 4px;
+
+    font-size: 7px;
+
+    line-height: 1.2;
+  }
+
+
+  /* CANTIDAD DE PACIENTES */
+
+  .day-patient-count {
+    display: block;
+
+    margin-top: 2px;
+
+    color: var(--color-primary);
+
+    font-size: 8px;
+    font-weight: 850;
+
+    line-height: 1.1;
+  }
+
+
+  /*
+    Botón compacto.
+
+    No dejamos que ocupe demasiado
+    espacio dentro del turno.
+  */
+
+  .day-turn-quick-actions {
+    margin-top: 3px;
+
+    padding-top: 0;
+  }
+
+  .day-turn-register-button {
+    min-height: 24px;
+
+    padding: 3px 6px;
+
+    border-radius: 6px;
+
+    font-size: 8px;
+  }
+
+}
+@media (max-width: 768px) {
+
+  .day-turn-card.fixed
+  .day-turn-quick-actions {
+    display: none;
+  }
+
 }
 
 /* =========================

@@ -257,35 +257,105 @@ export default function PacientesPage() {
       }
     }
 
-  const calcularEdad = (
+  /*
+    FECHAS
+
+    Evitamos usar new Date()
+    directamente con la fecha de
+    nacimiento porque puede cambiar
+    un día por la zona horaria.
+  */
+
+  const obtenerPartesFecha = (
     fechaNacimiento
   ) => {
     if (!fechaNacimiento) {
       return null
     }
 
-    const nacimiento =
-      new Date(
+    const fechaSolo =
+      fechaNacimiento.split('T')[0]
+
+    const [
+      anio,
+      mes,
+      dia
+    ] = fechaSolo
+      .split('-')
+      .map(Number)
+
+    if (
+      !anio ||
+      !mes ||
+      !dia
+    ) {
+      return null
+    }
+
+    return {
+      anio,
+      mes,
+      dia
+    }
+  }
+
+  const formatearFecha = (
+    fechaNacimiento
+  ) => {
+    const partes =
+      obtenerPartesFecha(
         fechaNacimiento
       )
+
+    if (!partes) {
+      return 'Sin fecha'
+    }
+
+    const {
+      anio,
+      mes,
+      dia
+    } = partes
+
+    return `${dia}/${mes}/${anio}`
+  }
+
+  const calcularEdad = (
+    fechaNacimiento
+  ) => {
+    const partes =
+      obtenerPartesFecha(
+        fechaNacimiento
+      )
+
+    if (!partes) {
+      return null
+    }
+
+    const {
+      anio,
+      mes,
+      dia
+    } = partes
 
     const hoy =
       new Date()
 
     let edad =
       hoy.getFullYear() -
-      nacimiento.getFullYear()
+      anio
 
-    const mes =
-      hoy.getMonth() -
-      nacimiento.getMonth()
+    const mesActual =
+      hoy.getMonth() + 1
+
+    const diaActual =
+      hoy.getDate()
 
     if (
-      mes < 0 ||
+      mesActual < mes ||
       (
-        mes === 0 &&
-        hoy.getDate() <
-          nacimiento.getDate()
+        mesActual === mes &&
+        diaActual < dia
       )
     ) {
       edad--
@@ -529,13 +599,9 @@ export default function PacientesPage() {
                         </span>
 
                         <strong>
-                          {paciente.fechaNacimiento
-                            ? new Date(
-                                paciente.fechaNacimiento
-                              ).toLocaleDateString(
-                                'es-UY'
-                              )
-                            : 'Sin fecha'}
+                          {formatearFecha(
+                            paciente.fechaNacimiento
+                          )}
                         </strong>
                       </div>
 

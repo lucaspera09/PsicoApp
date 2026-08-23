@@ -15,9 +15,11 @@ import NotasPaciente from '../components/pacientes/NotasPaciente.jsx'
 import PlanesTrabajoPaciente from '../components/pacientes/PlanesTrabajoPaciente.jsx'
 import SesionesPaciente from '../components/pacientes/SesionesPaciente.jsx'
 import EditarInformacionClinicaForm from '../components/pacientes/EditarInformacionClinicaForm.jsx'
+import HorariosPaciente from '../components/pacientes/HorariosPaciente.jsx'
 
 export default function PacienteDetallePage() {
-  const { id } = useParams()
+  const { id } =
+    useParams()
 
   const [
     paciente,
@@ -42,73 +44,123 @@ export default function PacienteDetallePage() {
   const [
     seccionActiva,
     setSeccionActiva
-  ] = useState('resumen')
+  ] = useState(
+    'resumen'
+  )
 
   useEffect(() => {
-    const cargarPaciente = async () => {
-      try {
-        setLoading(true)
-        setError(null)
+    const cargarPaciente =
+      async () => {
+        try {
+          setLoading(true)
+          setError(null)
 
-        const response =
-          await api.get(
-            `/pacientes/${id}`
+          const response =
+            await api.get(
+              `/pacientes/${id}`
+            )
+
+          const pacienteRecibido =
+            response.data?.data ||
+            response.data
+
+          setPaciente(
+            pacienteRecibido
+          )
+        } catch (error) {
+          console.error(
+            'Error al cargar paciente:',
+            error
           )
 
-        const pacienteRecibido =
-          response.data?.data ||
-          response.data
-
-        setPaciente(
-          pacienteRecibido
-        )
-      } catch (error) {
-        console.error(
-          'Error al cargar paciente:',
-          error
-        )
-
-        setError(
-          error.response?.data?.message ||
-          'No se pudo cargar el paciente'
-        )
-      } finally {
-        setLoading(false)
+          setError(
+            error.response?.data?.message ||
+            'No se pudo cargar el paciente'
+          )
+        } finally {
+          setLoading(false)
+        }
       }
-    }
 
     cargarPaciente()
   }, [id])
 
-  const calcularEdad = (
-    fechaNacimiento
+  /*
+    FECHAS SIN CONVERSIÓN
+    DE ZONA HORARIA
+  */
+
+  const obtenerPartesFecha = (
+    fecha
   ) => {
-    if (!fechaNacimiento) {
+    if (!fecha) {
       return null
     }
 
-    const nacimiento =
-      new Date(
+    const fechaSolo =
+      fecha
+        .toString()
+        .split('T')[0]
+
+    const [
+      anio,
+      mes,
+      dia
+    ] = fechaSolo
+      .split('-')
+      .map(Number)
+
+    if (
+      !anio ||
+      !mes ||
+      !dia
+    ) {
+      return null
+    }
+
+    return {
+      anio,
+      mes,
+      dia
+    }
+  }
+
+  const calcularEdad = (
+    fechaNacimiento
+  ) => {
+    const partes =
+      obtenerPartesFecha(
         fechaNacimiento
       )
+
+    if (!partes) {
+      return null
+    }
+
+    const {
+      anio,
+      mes,
+      dia
+    } = partes
 
     const hoy =
       new Date()
 
     let edad =
       hoy.getFullYear() -
-      nacimiento.getFullYear()
+      anio
 
-    const diferenciaMes =
-      hoy.getMonth() -
-      nacimiento.getMonth()
+    const mesActual =
+      hoy.getMonth() + 1
+
+    const diaActual =
+      hoy.getDate()
 
     if (
-      diferenciaMes < 0 ||
+      mesActual < mes ||
       (
-        diferenciaMes === 0 &&
-        hoy.getDate() <
-          nacimiento.getDate()
+        mesActual === mes &&
+        diaActual < dia
       )
     ) {
       edad--
@@ -120,15 +172,22 @@ export default function PacienteDetallePage() {
   const formatearFecha = (
     fecha
   ) => {
-    if (!fecha) {
+    const partes =
+      obtenerPartesFecha(
+        fecha
+      )
+
+    if (!partes) {
       return 'Sin fecha'
     }
 
-    return new Date(
-      fecha
-    ).toLocaleDateString(
-      'es-UY'
-    )
+    const {
+      anio,
+      mes,
+      dia
+    } = partes
+
+    return `${dia}/${mes}/${anio}`
   }
 
   const mostrarLista = (
@@ -383,6 +442,23 @@ export default function PacienteDetallePage() {
           type="button"
           className={
             seccionActiva ===
+            'horarios'
+              ? 'patient-tab active'
+              : 'patient-tab'
+          }
+          onClick={() =>
+            setSeccionActiva(
+              'horarios'
+            )
+          }
+        >
+          Horarios
+        </button>
+
+        <button
+          type="button"
+          className={
+            seccionActiva ===
             'clinica'
               ? 'patient-tab active'
               : 'patient-tab'
@@ -398,16 +474,12 @@ export default function PacienteDetallePage() {
 
       </nav>
 
-      {/* =====================
-          RESUMEN
-      ====================== */}
+      {/* RESUMEN */}
 
       {seccionActiva ===
         'resumen' && (
 
         <section className="patient-tab-content">
-
-          {/* DATOS */}
 
           <div className="patient-detail-card">
 
@@ -512,6 +584,7 @@ export default function PacienteDetallePage() {
               </span>
 
               <div>
+
                 <strong>
                   Información importante
                 </strong>
@@ -520,6 +593,7 @@ export default function PacienteDetallePage() {
                   Datos que conviene tener
                   presentes rápidamente.
                 </p>
+
               </div>
 
             </div>
@@ -527,6 +601,7 @@ export default function PacienteDetallePage() {
             <div className="patient-overview-important-grid">
 
               <div>
+
                 <span>
                   Alergias
                 </span>
@@ -537,9 +612,11 @@ export default function PacienteDetallePage() {
                     'Ninguna registrada'
                   )}
                 </strong>
+
               </div>
 
               <div>
+
                 <span>
                   Medicamentos
                 </span>
@@ -550,9 +627,11 @@ export default function PacienteDetallePage() {
                     'Ninguno registrado'
                   )}
                 </strong>
+
               </div>
 
               <div>
+
                 <span>
                   Información importante
                 </span>
@@ -561,6 +640,7 @@ export default function PacienteDetallePage() {
                   {paciente.informacionImportante ||
                     'Sin información registrada'}
                 </strong>
+
               </div>
 
             </div>
@@ -612,9 +692,7 @@ export default function PacienteDetallePage() {
 
       )}
 
-      {/* =====================
-          SESIONES
-      ====================== */}
+      {/* SESIONES */}
 
       {seccionActiva ===
         'sesiones' && (
@@ -660,9 +738,7 @@ export default function PacienteDetallePage() {
 
       )}
 
-      {/* =====================
-          NOTAS
-      ====================== */}
+      {/* NOTAS */}
 
       {seccionActiva ===
         'notas' && (
@@ -709,9 +785,7 @@ export default function PacienteDetallePage() {
 
       )}
 
-      {/* =====================
-          OBJETIVOS
-      ====================== */}
+      {/* OBJETIVOS */}
 
       {seccionActiva ===
         'objetivos' && (
@@ -757,9 +831,54 @@ export default function PacienteDetallePage() {
 
       )}
 
-      {/* =====================
-          CLÍNICA
-      ====================== */}
+      {/* HORARIOS */}
+
+      {seccionActiva ===
+        'horarios' && (
+
+        <section className="patient-tab-content">
+
+          <div className="patient-detail-content-heading">
+
+            <div className="patient-detail-content-icon">
+              ◷
+            </div>
+
+            <div>
+
+              <span>
+                Organización
+              </span>
+
+              <h2>
+                Horarios semanales
+              </h2>
+
+              <p>
+                Horarios fijos del paciente
+                vinculados directamente
+                con la agenda.
+              </p>
+
+            </div>
+
+          </div>
+
+          <div className="patient-detail-module">
+
+            <HorariosPaciente
+              paciente={
+                paciente
+              }
+            />
+
+          </div>
+
+        </section>
+
+      )}
+
+      {/* CLÍNICA */}
 
       {seccionActiva ===
         'clinica' && (
@@ -783,6 +902,7 @@ export default function PacienteDetallePage() {
               </div>
 
               {!editandoClinica && (
+
                 <button
                   type="button"
                   className="btn btn-secondary"
@@ -794,6 +914,7 @@ export default function PacienteDetallePage() {
                 >
                   Editar
                 </button>
+
               )}
 
             </div>
