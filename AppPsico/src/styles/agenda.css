@@ -2902,3 +2902,23 @@
 .turn-session-area-name {
   display: inline-block;
 }
+
+.agenda-action-remove {
+  grid-column: 1 / -1;
+
+  margin-top: 4px;
+
+  border-color:
+    rgba(220, 53, 69, 0.18);
+
+  background:
+    var(--color-danger-soft);
+
+  color:
+    var(--color-danger);
+}
+
+.agenda-action-remove:hover {
+  border-color:
+    var(--color-danger);
+}

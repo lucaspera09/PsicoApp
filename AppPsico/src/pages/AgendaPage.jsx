@@ -6,14 +6,13 @@ import {
 } from 'react'
 
 import {
+  Link,
   useLocation,
   useNavigate
 } from 'react-router'
 
 import api from '../api/api.js'
 
-import CrearTurnoForm from '../components/agenda/CrearTurnoForm.jsx'
-import EditarTurnoForm from '../components/agenda/EditarTurnoForm.jsx'
 import RegistrarSesionTurnoForm from '../components/agenda/RegistrarSesionTurnoForm.jsx'
 
 import AgendaHoyGrid from '../components/agenda/AgendaHoyGrid.jsx'
@@ -22,34 +21,38 @@ import AgendaMensualGrid from '../components/agenda/AgendaMensualGrid.jsx'
 
 export default function AgendaPage() {
   const location =
-  useLocation()
+    useLocation()
 
-const navigate =
-  useNavigate()
+  const navigate =
+    useNavigate()
 
-const accesoRapidoProcesado =
-  useRef(false)
-  const [turnos, setTurnos] = useState([])
+  const accesoRapidoProcesado =
+    useRef(false)
+
+  const [
+    turnos,
+    setTurnos
+  ] = useState([])
 
   const [
     horariosSemanales,
     setHorariosSemanales
   ] = useState([])
 
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-
-  const [vista, setVista] = useState('hoy')
+  const [
+    loading,
+    setLoading
+  ] = useState(true)
 
   const [
-    mostrarFormulario,
-    setMostrarFormulario
-  ] = useState(false)
-
-  const [
-    turnoEditando,
-    setTurnoEditando
+    error,
+    setError
   ] = useState(null)
+
+  const [
+    vista,
+    setVista
+  ] = useState('hoy')
 
   const [
     turnoRegistrandoSesion,
@@ -66,169 +69,189 @@ const accesoRapidoProcesado =
     setCambiandoEstadoId
   ] = useState(null)
 
+  const [
+    quitandoPacienteId,
+    setQuitandoPacienteId
+  ] = useState(null)
+
   /*
+    ========================================
     CARGAR AGENDA
+    ========================================
   */
 
   useEffect(() => {
-    const cargarAgenda = async () => {
-      try {
-        setLoading(true)
-        setError(null)
+    const cargarAgenda =
+      async () => {
+        try {
+          setLoading(true)
+          setError(null)
 
-        const [
-          responseTurnos,
-          responseHorarios
-        ] = await Promise.all([
-          api.get('/turnos'),
-          api.get('/horarios-semanales')
-        ])
+          const [
+            responseTurnos,
+            responseHorarios
+          ] = await Promise.all([
+            api.get('/turnos'),
 
-        const turnosRecibidos =
-          responseTurnos.data?.data ||
-          responseTurnos.data
+            api.get(
+              '/horarios-semanales'
+            )
+          ])
 
-        const horariosRecibidos =
-          responseHorarios.data?.data ||
-          responseHorarios.data
+          const turnosRecibidos =
+            responseTurnos.data?.data ||
+            responseTurnos.data
 
-        setTurnos(
-          Array.isArray(turnosRecibidos)
-            ? turnosRecibidos
-            : []
-        )
+          const horariosRecibidos =
+            responseHorarios.data?.data ||
+            responseHorarios.data
 
-        setHorariosSemanales(
-          Array.isArray(horariosRecibidos)
-            ? horariosRecibidos
-            : []
-        )
-      } catch (error) {
-        console.error(
-          'Error al cargar agenda:',
-          error
-        )
+          setTurnos(
+            Array.isArray(
+              turnosRecibidos
+            )
+              ? turnosRecibidos
+              : []
+          )
 
-        setError(
-          error.response?.data?.message ||
-          'No se pudo cargar la agenda'
-        )
-      } finally {
-        setLoading(false)
+          setHorariosSemanales(
+            Array.isArray(
+              horariosRecibidos
+            )
+              ? horariosRecibidos
+              : []
+          )
+
+        } catch (error) {
+          console.error(
+            'Error al cargar agenda:',
+            error
+          )
+
+          setError(
+            error.response?.data?.message ||
+            'No se pudo cargar la agenda'
+          )
+
+        } finally {
+          setLoading(false)
+        }
       }
-    }
 
     cargarAgenda()
   }, [])
 
   /*
-    ORDENAR TURNOS
+    ========================================
+    ORDENAR TURNOS REALES
+    ========================================
   */
 
-  const turnosOrdenados = useMemo(() => {
-    return [...turnos].sort(
-      (a, b) =>
-        new Date(a.fechaInicio) -
-        new Date(b.fechaInicio)
-    )
-  }, [turnos])
+  const turnosOrdenados =
+    useMemo(() => {
+      return [...turnos].sort(
+        (a, b) =>
+          new Date(
+            a.fechaInicio
+          ) -
+          new Date(
+            b.fechaInicio
+          )
+      )
+    }, [turnos])
 
   /*
-    CREAR TURNO
-  */
-
-  const handleTurnoCreado = (
-    nuevoTurno
-  ) => {
-    setTurnos((prev) => [
-      ...prev,
-      nuevoTurno
-    ])
-
-    setMostrarFormulario(false)
-  }
-
-  const handleCancelarCreacion = () => {
-    setMostrarFormulario(false)
-  }
-
-  /*
+    ========================================
     CONVERTIR HORARIO FIJO
     EN TURNO REAL
+    ========================================
   */
 
-  const asegurarTurnoReal = async (
-    turno
-  ) => {
-    if (!turno.esHorarioFijo) {
-      return turno
-    }
+  const asegurarTurnoReal =
+    async (turno) => {
+      if (
+        !turno.esHorarioFijo
+      ) {
+        return turno
+      }
 
-    const participantes =
-      Array.isArray(
-        turno.participantes
-      )
-        ? turno.participantes
-            .map(
-              (participante) => ({
-                paciente:
+      const participantes =
+        Array.isArray(
+          turno.participantes
+        )
+          ? turno.participantes
+              .map(
+                (
                   participante
-                    .paciente?._id ||
-                  participante.paciente,
+                ) => ({
+                  paciente:
+                    participante
+                      .paciente?._id ||
+                    participante
+                      .paciente,
 
-                estado:
-                  participante.estado ||
-                  'programado'
-              })
-            )
-            .filter(
-              (participante) =>
-                participante.paciente
-            )
-        : []
+                  estado:
+                    participante
+                      .estado ||
+                    'programado'
+                })
+              )
+              .filter(
+                (
+                  participante
+                ) =>
+                  participante
+                    .paciente
+              )
+          : []
 
-    if (
-      participantes.length === 0
-    ) {
-      throw new Error(
-        'No se pudieron identificar los pacientes del horario'
+      if (
+        participantes.length ===
+        0
+      ) {
+        throw new Error(
+          'No se pudieron identificar los pacientes del horario'
+        )
+      }
+
+      const datos = {
+        participantes,
+
+        fechaInicio:
+          turno.fechaInicio,
+
+        fechaFin:
+          turno.fechaFin
+      }
+
+      const response =
+        await api.post(
+          '/turnos',
+          datos
+        )
+
+      const turnoReal =
+        response.data?.data ||
+        response.data
+
+      setTurnos(
+        (prev) => [
+          ...prev,
+          turnoReal
+        ]
       )
-    }
 
-    const datos = {
-      participantes,
-
-      fechaInicio:
-        turno.fechaInicio,
-
-      fechaFin:
-        turno.fechaFin
-    }
-
-    const response =
-      await api.post(
-        '/turnos',
-        datos
+      setTurnoSeleccionado(
+        turnoReal
       )
 
-    const turnoReal =
-      response.data?.data ||
-      response.data
-
-    setTurnos((prev) => [
-      ...prev,
-      turnoReal
-    ])
-
-    setTurnoSeleccionado(
-      turnoReal
-    )
-
-    return turnoReal
-  }
+      return turnoReal
+    }
 
   /*
-    SELECCIONAR TURNO
+    ========================================
+    SELECCIONAR HORARIO
+    ========================================
   */
 
   const handleSeleccionarTurno = (
@@ -238,873 +261,1002 @@ const accesoRapidoProcesado =
       turno
     )
 
-    setMostrarFormulario(false)
-    setTurnoEditando(null)
-    setTurnoRegistrandoSesion(null)
-  }
-
-  /*
-    EDITAR TURNO
-  */
-
-  const handleEditarTurno = async (
-    turno
-  ) => {
-    try {
-      const turnoReal =
-        await asegurarTurnoReal(
-          turno
-        )
-
-      setTurnoSeleccionado(null)
-      setMostrarFormulario(false)
-      setTurnoRegistrandoSesion(null)
-
-      setTurnoEditando(
-        turnoReal
-      )
-    } catch (error) {
-      console.error(
-        'Error al preparar el turno:',
-        error
-      )
-
-      alert(
-        error.response?.data?.message ||
-        error.message ||
-        'No se pudo preparar el turno para editarlo'
-      )
-    }
-  }
-
-  const handleTurnoActualizado = (
-    turnoActualizado
-  ) => {
-    setTurnos((prev) =>
-      prev.map((turno) =>
-        turno._id ===
-        turnoActualizado._id
-          ? {
-              ...turno,
-              ...turnoActualizado
-            }
-          : turno
-      )
-    )
-
-    setTurnoEditando(null)
-  }
-
-  const handleCancelarEdicion = () => {
-    setTurnoEditando(null)
-  }
-
-  /*
-    ABRIR REGISTRO DE SESIÓN
-
-    Seguimos recibiendo el participante
-    que el usuario tocó.
-
-    Ese paciente queda seleccionado
-    inicialmente dentro del formulario,
-    pero después se pueden seleccionar
-    los demás pacientes del mismo turno.
-  */
-
-  const handleRegistrarSesion = async (
-    turno,
-    participante
-  ) => {
-    try {
-      const turnoReal =
-        await asegurarTurnoReal(
-          turno
-        )
-
-      const pacienteId =
-        participante.paciente?._id ||
-        participante.paciente
-
-      const participanteReal =
-        turnoReal.participantes?.find(
-          (item) =>
-            (
-              item.paciente?._id ||
-              item.paciente
-            )?.toString() ===
-            pacienteId?.toString()
-        )
-
-      if (!participanteReal) {
-        throw new Error(
-          'No se encontró al paciente dentro del turno'
-        )
-      }
-
-      /*
-        paciente se mantiene por
-        compatibilidad.
-
-        RegistrarSesionTurnoForm
-        también recibe participantes,
-        por lo que puede seleccionar
-        varios niños.
-      */
-
-      const turnoParaSesion = {
-        ...turnoReal,
-
-        paciente:
-          participanteReal.paciente
-      }
-
-      setTurnoSeleccionado(null)
-      setMostrarFormulario(false)
-      setTurnoEditando(null)
-
-      setTurnoRegistrandoSesion(
-        turnoParaSesion
-      )
-    } catch (error) {
-      console.error(
-        'Error al preparar el turno:',
-        error
-      )
-
-      alert(
-        error.response?.data?.message ||
-        error.message ||
-        'No se pudo preparar el turno para registrar la sesión'
-      )
-    }
-  }
-  /*
-  ACCESO RÁPIDO DESDE EL INICIO
-*/
-
-/*
-  ACCESOS RÁPIDOS A REGISTRAR SESIÓN
-
-  Puede venir:
-  1. Un turno desde el Dashboard.
-  2. Un paciente desde su ficha.
-*/
-
-useEffect(() => {
-  if (
-    loading ||
-    accesoRapidoProcesado.current
-  ) {
-    return
-  }
-
-  const turnoRecibido =
-    location.state
-      ?.registrarSesion
-
-  const pacienteSesionId =
-    location.state
-      ?.pacienteSesionId
-
-  if (
-    !turnoRecibido &&
-    !pacienteSesionId
-  ) {
-    return
-  }
-
-  accesoRapidoProcesado.current =
-    true
-
-  const limpiarNavegacion = () => {
-    navigate(
-      '/agenda',
-      {
-        replace: true,
-        state: null
-      }
-    )
-  }
-
-  const obtenerPacienteId = (
-    paciente
-  ) => {
-    return (
-      paciente?._id ||
-      paciente
-    )?.toString()
-  }
-
-  const buscarParticipante = (
-    turno,
-    pacienteId = null
-  ) => {
-    const participantes =
-      turno.participantes ||
-      []
-
-    /*
-      Si venimos desde la ficha,
-      buscamos específicamente
-      ese paciente.
-    */
-    if (pacienteId) {
-      return participantes.find(
-        (participante) =>
-          obtenerPacienteId(
-            participante.paciente
-          ) ===
-          pacienteId.toString()
-      )
-    }
-
-    /*
-      Si venimos desde el Dashboard,
-      elegimos uno pendiente.
-    */
-    return (
-      participantes.find(
-        (participante) =>
-          participante.estado ===
-          'programado'
-      ) ||
-      participantes[0]
-    )
-  }
-
-  const esHoy = (
-    fecha
-  ) => {
-    const fechaTurno =
-      new Date(fecha)
-
-    const hoy =
-      new Date()
-
-    return (
-      fechaTurno.getFullYear() ===
-        hoy.getFullYear() &&
-      fechaTurno.getMonth() ===
-        hoy.getMonth() &&
-      fechaTurno.getDate() ===
-        hoy.getDate()
-    )
-  }
-
-  const abrirDesdeTurno = async (
-    turno,
-    pacienteId = null
-  ) => {
-    const participante =
-      buscarParticipante(
-        turno,
-        pacienteId
-      )
-
-    if (!participante) {
-      alert(
-        'No se encontró al paciente dentro del turno.'
-      )
-
-      limpiarNavegacion()
-
-      return
-    }
-
-    await handleRegistrarSesion(
-      turno,
-      participante
-    )
-
-    limpiarNavegacion()
-  }
-
-  const buscarTurnoPacienteHoy =
-    async () => {
-
-      /*
-        PRIMERO:
-        buscamos un turno real de hoy.
-      */
-
-      const turnoReal =
-        turnos.find(
-          (turno) => {
-            if (
-              !turno.fechaInicio ||
-              !esHoy(
-                turno.fechaInicio
-              )
-            ) {
-              return false
-            }
-
-            return (
-              turno.participantes ||
-              []
-            ).some(
-              (participante) =>
-                obtenerPacienteId(
-                  participante.paciente
-                ) ===
-                pacienteSesionId.toString()
-            )
-          }
-        )
-
-      if (turnoReal) {
-        await abrirDesdeTurno(
-          turnoReal,
-          pacienteSesionId
-        )
-
-        return
-      }
-
-      /*
-        SEGUNDO:
-        revisamos horarios fijos de hoy.
-      */
-
-      const hoy =
-        new Date()
-
-      hoy.setHours(
-        0,
-        0,
-        0,
-        0
-      )
-
-      const horario =
-        horariosSemanales.find(
-          (item) => {
-            if (!item.activo) {
-              return false
-            }
-
-            if (
-              item.diaSemana !==
-              hoy.getDay()
-            ) {
-              return false
-            }
-
-            if (item.fechaDesde) {
-              const desde =
-                new Date(
-                  item.fechaDesde
-                )
-
-              desde.setHours(
-                0,
-                0,
-                0,
-                0
-              )
-
-              if (hoy < desde) {
-                return false
-              }
-            }
-
-            if (item.fechaHasta) {
-              const hasta =
-                new Date(
-                  item.fechaHasta
-                )
-
-              hasta.setHours(
-                23,
-                59,
-                59,
-                999
-              )
-
-              if (hoy > hasta) {
-                return false
-              }
-            }
-
-            const pacientes =
-              Array.isArray(
-                item.pacientes
-              )
-                ? item.pacientes
-                : item.paciente
-                ? [item.paciente]
-                : []
-
-            return pacientes.some(
-              (paciente) =>
-                obtenerPacienteId(
-                  paciente
-                ) ===
-                pacienteSesionId.toString()
-            )
-          }
-        )
-
-      if (horario) {
-        const [
-          horaInicio,
-          minutoInicio
-        ] =
-          horario.horaInicio
-            .split(':')
-            .map(Number)
-
-        const [
-          horaFin,
-          minutoFin
-        ] =
-          horario.horaFin
-            .split(':')
-            .map(Number)
-
-        const fechaInicio =
-          new Date()
-
-        fechaInicio.setHours(
-          horaInicio,
-          minutoInicio,
-          0,
-          0
-        )
-
-        const fechaFin =
-          new Date()
-
-        fechaFin.setHours(
-          horaFin,
-          minutoFin,
-          0,
-          0
-        )
-
-        const pacientes =
-          Array.isArray(
-            horario.pacientes
-          )
-            ? horario.pacientes
-            : horario.paciente
-            ? [horario.paciente]
-            : []
-
-        const turnoVirtual = {
-          _id:
-            `horario-${horario._id}-${hoy
-              .toISOString()
-              .slice(0, 10)}`,
-
-          horarioSemanalId:
-            horario._id,
-
-          esHorarioFijo:
-            true,
-
-          fechaInicio:
-            fechaInicio.toISOString(),
-
-          fechaFin:
-            fechaFin.toISOString(),
-
-          participantes:
-            pacientes.map(
-              (paciente) => ({
-                paciente,
-                estado:
-                  'programado'
-              })
-            )
-        }
-
-        await abrirDesdeTurno(
-          turnoVirtual,
-          pacienteSesionId
-        )
-
-        return
-      }
-
-      /*
-        NO TIENE TURNO HOY
-      */
-
-      alert(
-        'Este paciente no tiene ningún turno programado para hoy.'
-      )
-
-      limpiarNavegacion()
-    }
-
-  const ejecutar = async () => {
-    try {
-
-      /*
-        DESDE DASHBOARD
-      */
-
-      if (turnoRecibido) {
-        await abrirDesdeTurno(
-          turnoRecibido
-        )
-
-        return
-      }
-
-      /*
-        DESDE FICHA DEL PACIENTE
-      */
-
-      if (pacienteSesionId) {
-        await buscarTurnoPacienteHoy()
-      }
-
-    } catch (error) {
-      console.error(
-        'Error al abrir el registro rápido:',
-        error
-      )
-
-      alert(
-        error.response?.data?.message ||
-        error.message ||
-        'No se pudo abrir el registro de la sesión'
-      )
-
-      limpiarNavegacion()
-    }
-  }
-
-  ejecutar()
-
-}, [
-  loading,
-  location.state,
-  navigate,
-  turnos,
-  horariosSemanales
-])
-
-  const handleRegistrarSesionRapida = (
-  turno
-) => {
-  const participantes =
-    turno.participantes || []
-
-  /*
-    Elegimos primero un paciente
-    que todavía esté programado.
-
-    Si es horario fijo todos vienen
-    como programados.
-  */
-  const participanteInicial =
-    participantes.find(
-      (participante) =>
-        participante.estado ===
-        'programado'
-    ) ||
-    participantes[0]
-
-  if (!participanteInicial) {
-    alert(
-      'Este turno no tiene pacientes'
-    )
-
-    return
-  }
-
-  handleRegistrarSesion(
-    turno,
-    participanteInicial
-  )
-}
-  /*
-    SESIONES CREADAS
-
-    Ahora RegistrarSesionTurnoForm
-    devuelve:
-
-    nuevasSesiones
-    pacientesSeleccionados
-
-    Ejemplo:
-    pacientesSeleccionados = [
-      idMateo,
-      idJuan
-    ]
-
-    Marcamos a ambos como realizados.
-  */
-
-  const handleSesionCreada = async (
-  nuevasSesiones,
-  pacientesSeleccionados
-) => {
-  const turno =
-    turnoRegistrandoSesion
-
-  if (!turno) {
-    return
-  }
-
-  let pacientesIds =
-    Array.isArray(
-      pacientesSeleccionados
-    )
-      ? pacientesSeleccionados
-      : []
-
-  /*
-    Compatibilidad con el flujo
-    de un solo paciente.
-  */
-  if (
-    pacientesIds.length === 0 &&
-    turno.paciente
-  ) {
-    const pacienteId =
-      turno.paciente?._id ||
-      turno.paciente
-
-    if (pacienteId) {
-      pacientesIds = [
-        pacienteId
-      ]
-    }
-  }
-
-  /*
-    Si no se creó ninguna sesión,
-    no hacemos cambios en el turno.
-  */
-  if (
-    pacientesIds.length === 0
-  ) {
-    return
-  }
-
-  try {
-    let turnoActualizado =
-      turno
-
-    /*
-      Marcamos como realizado
-      solamente a los pacientes
-      cuyas sesiones se crearon.
-    */
-    for (
-      const pacienteId
-      of pacientesIds
-    ) {
-      const participante =
-        turnoActualizado
-          .participantes
-          ?.find(
-            (item) =>
-              (
-                item.paciente?._id ||
-                item.paciente
-              )?.toString() ===
-              pacienteId?.toString()
-          )
-
-      if (
-        participante?.estado ===
-        'realizado'
-      ) {
-        continue
-      }
-
-      const response =
-        await api.patch(
-          `/turnos/${turno._id}/status`,
-          {
-            pacienteId,
-            estado: 'realizado'
-          }
-        )
-
-      turnoActualizado =
-        response.data?.data ||
-        response.data
-    }
-
-    /*
-      Actualizamos el turno en
-      la lista general de Agenda.
-    */
-    setTurnos((prev) =>
-      prev.map((item) =>
-        item._id ===
-        turno._id
-          ? turnoActualizado
-          : item
-      )
-    )
-
-    /*
-      También actualizamos la copia
-      que tiene abierto el formulario.
-
-      Importante:
-      NO cerramos el modal acá.
-      RegistrarSesionTurnoForm decide
-      cuándo cerrarlo.
-    */
-    setTurnoRegistrandoSesion(
-      (prev) => {
-        if (!prev) {
-          return prev
-        }
-
-        return {
-          ...prev,
-          ...turnoActualizado,
-
-          /*
-            Conservamos el paciente
-            desde el cual se abrió
-            originalmente el formulario.
-          */
-          paciente:
-            prev.paciente
-        }
-      }
-    )
-
-    return turnoActualizado
-
-  } catch (error) {
-    console.error(
-      'Las sesiones se guardaron, pero no se pudieron actualizar todos los estados:',
-      error
-    )
-
-    alert(
-      'Las sesiones se guardaron, pero hubo un problema al actualizar el estado de alguno de los pacientes.'
-    )
-
-    /*
-      Lanzamos el error nuevamente
-      para que RegistrarSesionTurnoForm
-      sepa que el proceso no terminó
-      correctamente.
-    */
-    throw error
-  }
-}
-
-  const handleCancelarSesion = () => {
     setTurnoRegistrandoSesion(
       null
     )
   }
 
   /*
-    CAMBIAR ESTADO MANUALMENTE
+    ========================================
+    REGISTRAR SESIÓN
+    ========================================
   */
 
-  const handleCambiarEstado = async (
-    turno,
-    participante,
-    nuevoEstado
-  ) => {
-    const nombresEstados = {
-      programado:
-        'Programado',
+  const handleRegistrarSesion =
+    async (
+      turno,
+      participante
+    ) => {
+      try {
+        const turnoReal =
+          await asegurarTurnoReal(
+            turno
+          )
 
-      realizado:
-        'Realizado',
+        const pacienteId =
+          participante
+            .paciente?._id ||
+          participante.paciente
 
-      cancelado:
-        'Cancelado',
+        const participanteReal =
+          turnoReal.participantes
+            ?.find(
+              (item) =>
+                (
+                  item
+                    .paciente?._id ||
+                  item.paciente
+                )?.toString() ===
+                pacienteId
+                  ?.toString()
+            )
 
-      no_asistio:
-        'No asistió'
+        if (
+          !participanteReal
+        ) {
+          throw new Error(
+            'No se encontró al paciente dentro del horario'
+          )
+        }
+
+        const turnoParaSesion = {
+          ...turnoReal,
+
+          paciente:
+            participanteReal
+              .paciente
+        }
+
+        setTurnoSeleccionado(
+          null
+        )
+
+        setTurnoRegistrandoSesion(
+          turnoParaSesion
+        )
+
+      } catch (error) {
+        console.error(
+          'Error al preparar el horario:',
+          error
+        )
+
+        alert(
+          error.response?.data?.message ||
+          error.message ||
+          'No se pudo preparar el horario para registrar la sesión'
+        )
+      }
     }
 
-    const paciente =
-      participante.paciente
+  /*
+    ========================================
+    ACCESO RÁPIDO
+    ========================================
+  */
 
-    const nombrePaciente =
-      `${paciente?.nombre || ''} ${
-        paciente?.apellido || ''
-      }`.trim() ||
-      'este paciente'
-
-    const confirmado =
-      window.confirm(
-        `¿Querés cambiar a ${nombrePaciente} a "${nombresEstados[nuevoEstado]}"?`
-      )
-
-    if (!confirmado) {
+  useEffect(() => {
+    if (
+      loading ||
+      accesoRapidoProcesado.current
+    ) {
       return
     }
 
-    try {
-      const turnoReal =
-        await asegurarTurnoReal(
-          turno
+    const turnoRecibido =
+      location.state
+        ?.registrarSesion
+
+    const pacienteSesionId =
+      location.state
+        ?.pacienteSesionId
+
+    if (
+      !turnoRecibido &&
+      !pacienteSesionId
+    ) {
+      return
+    }
+
+    accesoRapidoProcesado.current =
+      true
+
+    const limpiarNavegacion =
+      () => {
+        navigate(
+          '/agenda',
+          {
+            replace: true,
+            state: null
+          }
         )
+      }
+
+    const obtenerPacienteId = (
+      paciente
+    ) => {
+      return (
+        paciente?._id ||
+        paciente
+      )?.toString()
+    }
+
+    const buscarParticipante = (
+      turno,
+      pacienteId = null
+    ) => {
+      const participantes =
+        turno.participantes ||
+        []
+
+      if (pacienteId) {
+        return participantes.find(
+          (
+            participante
+          ) =>
+            obtenerPacienteId(
+              participante.paciente
+            ) ===
+            pacienteId.toString()
+        )
+      }
+
+      return (
+        participantes.find(
+          (
+            participante
+          ) =>
+            participante.estado ===
+            'programado'
+        ) ||
+        participantes[0]
+      )
+    }
+
+    const esHoy = (
+      fecha
+    ) => {
+      const fechaTurno =
+        new Date(fecha)
+
+      const hoy =
+        new Date()
+
+      return (
+        fechaTurno.getFullYear() ===
+          hoy.getFullYear() &&
+        fechaTurno.getMonth() ===
+          hoy.getMonth() &&
+        fechaTurno.getDate() ===
+          hoy.getDate()
+      )
+    }
+
+    const abrirDesdeTurno =
+      async (
+        turno,
+        pacienteId = null
+      ) => {
+        const participante =
+          buscarParticipante(
+            turno,
+            pacienteId
+          )
+
+        if (!participante) {
+          alert(
+            'No se encontró al paciente dentro del horario.'
+          )
+
+          limpiarNavegacion()
+
+          return
+        }
+
+        await handleRegistrarSesion(
+          turno,
+          participante
+        )
+
+        limpiarNavegacion()
+      }
+
+    const buscarHorarioPacienteHoy =
+      async () => {
+        const turnoReal =
+          turnos.find(
+            (turno) => {
+              if (
+                !turno.fechaInicio ||
+                !esHoy(
+                  turno.fechaInicio
+                )
+              ) {
+                return false
+              }
+
+              return (
+                turno.participantes ||
+                []
+              ).some(
+                (
+                  participante
+                ) =>
+                  obtenerPacienteId(
+                    participante
+                      .paciente
+                  ) ===
+                  pacienteSesionId
+                    .toString()
+              )
+            }
+          )
+
+        if (turnoReal) {
+          await abrirDesdeTurno(
+            turnoReal,
+            pacienteSesionId
+          )
+
+          return
+        }
+
+        const hoy =
+          new Date()
+
+        hoy.setHours(
+          0,
+          0,
+          0,
+          0
+        )
+
+        const horario =
+          horariosSemanales.find(
+            (item) => {
+              if (!item.activo) {
+                return false
+              }
+
+              if (
+                item.diaSemana !==
+                hoy.getDay()
+              ) {
+                return false
+              }
+
+              if (
+                item.fechaDesde
+              ) {
+                const desde =
+                  new Date(
+                    item.fechaDesde
+                  )
+
+                desde.setHours(
+                  0,
+                  0,
+                  0,
+                  0
+                )
+
+                if (
+                  hoy < desde
+                ) {
+                  return false
+                }
+              }
+
+              if (
+                item.fechaHasta
+              ) {
+                const hasta =
+                  new Date(
+                    item.fechaHasta
+                  )
+
+                hasta.setHours(
+                  23,
+                  59,
+                  59,
+                  999
+                )
+
+                if (
+                  hoy > hasta
+                ) {
+                  return false
+                }
+              }
+
+              const pacientes =
+                Array.isArray(
+                  item.pacientes
+                )
+                  ? item.pacientes
+                  : item.paciente
+                  ? [
+                      item.paciente
+                    ]
+                  : []
+
+              return pacientes.some(
+                (
+                  paciente
+                ) =>
+                  obtenerPacienteId(
+                    paciente
+                  ) ===
+                  pacienteSesionId
+                    .toString()
+              )
+            }
+          )
+
+        if (horario) {
+          const [
+            horaInicio,
+            minutoInicio
+          ] =
+            horario.horaInicio
+              .split(':')
+              .map(Number)
+
+          const [
+            horaFin,
+            minutoFin
+          ] =
+            horario.horaFin
+              .split(':')
+              .map(Number)
+
+          const fechaInicio =
+            new Date()
+
+          fechaInicio.setHours(
+            horaInicio,
+            minutoInicio,
+            0,
+            0
+          )
+
+          const fechaFin =
+            new Date()
+
+          fechaFin.setHours(
+            horaFin,
+            minutoFin,
+            0,
+            0
+          )
+
+          const pacientes =
+            Array.isArray(
+              horario.pacientes
+            )
+              ? horario.pacientes
+              : horario.paciente
+              ? [
+                  horario.paciente
+                ]
+              : []
+
+          const turnoVirtual = {
+            _id:
+              `horario-${horario._id}-${hoy
+                .toISOString()
+                .slice(0, 10)}`,
+
+            horarioSemanalId:
+              horario._id,
+
+            esHorarioFijo:
+              true,
+
+            fechaInicio:
+              fechaInicio
+                .toISOString(),
+
+            fechaFin:
+              fechaFin
+                .toISOString(),
+
+            participantes:
+              pacientes.map(
+                (
+                  paciente
+                ) => ({
+                  paciente,
+
+                  estado:
+                    'programado'
+                })
+              )
+          }
+
+          await abrirDesdeTurno(
+            turnoVirtual,
+            pacienteSesionId
+          )
+
+          return
+        }
+
+        alert(
+          'Este paciente no tiene un horario programado para hoy.'
+        )
+
+        limpiarNavegacion()
+      }
+
+    const ejecutar =
+      async () => {
+        try {
+          if (turnoRecibido) {
+            await abrirDesdeTurno(
+              turnoRecibido
+            )
+
+            return
+          }
+
+          if (
+            pacienteSesionId
+          ) {
+            await buscarHorarioPacienteHoy()
+          }
+
+        } catch (error) {
+          console.error(
+            'Error al abrir el registro rápido:',
+            error
+          )
+
+          alert(
+            error.response?.data?.message ||
+            error.message ||
+            'No se pudo abrir el registro de la sesión'
+          )
+
+          limpiarNavegacion()
+        }
+      }
+
+    ejecutar()
+
+  }, [
+    loading,
+    location.state,
+    navigate,
+    turnos,
+    horariosSemanales
+  ])
+
+  /*
+    ========================================
+    REGISTRO RÁPIDO
+    ========================================
+  */
+
+  const handleRegistrarSesionRapida = (
+    turno
+  ) => {
+    const participantes =
+      turno.participantes ||
+      []
+
+    const participanteInicial =
+      participantes.find(
+        (
+          participante
+        ) =>
+          participante.estado ===
+          'programado'
+      ) ||
+      participantes[0]
+
+    if (
+      !participanteInicial
+    ) {
+      alert(
+        'Este horario no tiene pacientes'
+      )
+
+      return
+    }
+
+    handleRegistrarSesion(
+      turno,
+      participanteInicial
+    )
+  }
+
+  /*
+    ========================================
+    SESIONES CREADAS
+    ========================================
+  */
+
+  const handleSesionCreada =
+    async (
+      nuevasSesiones,
+      pacientesSeleccionados
+    ) => {
+      const turno =
+        turnoRegistrandoSesion
+
+      if (!turno) {
+        return
+      }
+
+      let pacientesIds =
+        Array.isArray(
+          pacientesSeleccionados
+        )
+          ? pacientesSeleccionados
+          : []
+
+      if (
+        pacientesIds.length ===
+          0 &&
+        turno.paciente
+      ) {
+        const pacienteId =
+          turno.paciente?._id ||
+          turno.paciente
+
+        if (pacienteId) {
+          pacientesIds = [
+            pacienteId
+          ]
+        }
+      }
+
+      if (
+        pacientesIds.length ===
+        0
+      ) {
+        return
+      }
+
+      try {
+        let turnoActualizado =
+          turno
+
+        for (
+          const pacienteId
+          of pacientesIds
+        ) {
+          const participante =
+            turnoActualizado
+              .participantes
+              ?.find(
+                (item) =>
+                  (
+                    item
+                      .paciente?._id ||
+                    item.paciente
+                  )?.toString() ===
+                  pacienteId
+                    ?.toString()
+              )
+
+          if (
+            participante?.estado ===
+            'realizado'
+          ) {
+            continue
+          }
+
+          const response =
+            await api.patch(
+              `/turnos/${turno._id}/status`,
+              {
+                pacienteId,
+
+                estado:
+                  'realizado'
+              }
+            )
+
+          turnoActualizado =
+            response.data?.data ||
+            response.data
+        }
+
+        setTurnos(
+          (prev) =>
+            prev.map(
+              (item) =>
+                item._id ===
+                turno._id
+                  ? turnoActualizado
+                  : item
+            )
+        )
+
+        setTurnoRegistrandoSesion(
+          (prev) => {
+            if (!prev) {
+              return prev
+            }
+
+            return {
+              ...prev,
+              ...turnoActualizado,
+
+              paciente:
+                prev.paciente
+            }
+          }
+        )
+
+        return turnoActualizado
+
+      } catch (error) {
+        console.error(
+          'Las sesiones se guardaron, pero no se pudieron actualizar todos los estados:',
+          error
+        )
+
+        alert(
+          'Las sesiones se guardaron, pero hubo un problema al actualizar el estado de alguno de los pacientes.'
+        )
+
+        throw error
+      }
+    }
+
+  const handleCancelarSesion =
+    () => {
+      setTurnoRegistrandoSesion(
+        null
+      )
+    }
+
+  /*
+    ========================================
+    CAMBIAR ESTADO
+    ========================================
+  */
+
+  const handleCambiarEstado =
+    async (
+      turno,
+      participante,
+      nuevoEstado
+    ) => {
+      const nombresEstados = {
+        programado:
+          'Programado',
+
+        realizado:
+          'Realizado',
+
+        cancelado:
+          'Cancelado',
+
+        no_asistio:
+          'No asistió'
+      }
+
+      const paciente =
+        participante.paciente
+
+      const nombrePaciente =
+        `${paciente?.nombre || ''} ${
+          paciente?.apellido || ''
+        }`.trim() ||
+        'este paciente'
+
+      const confirmado =
+        window.confirm(
+          `¿Querés cambiar a ${nombrePaciente} a "${nombresEstados[nuevoEstado]}"?`
+        )
+
+      if (!confirmado) {
+        return
+      }
+
+      try {
+        const turnoReal =
+          await asegurarTurnoReal(
+            turno
+          )
+
+        const pacienteId =
+          paciente?._id ||
+          paciente
+
+        setCambiandoEstadoId(
+          `${turnoReal._id}-${pacienteId}`
+        )
+
+        const response =
+          await api.patch(
+            `/turnos/${turnoReal._id}/status`,
+            {
+              pacienteId,
+
+              estado:
+                nuevoEstado
+            }
+          )
+
+        const turnoActualizado =
+          response.data?.data ||
+          response.data
+
+        setTurnos(
+          (prev) =>
+            prev.map(
+              (item) =>
+                item._id ===
+                turnoReal._id
+                  ? turnoActualizado
+                  : item
+            )
+        )
+
+        setTurnoSeleccionado(
+          turnoActualizado
+        )
+
+      } catch (error) {
+        console.error(
+          'Error al cambiar estado:',
+          error
+        )
+
+        alert(
+          error.response?.data?.message ||
+          error.message ||
+          'No se pudo cambiar el estado'
+        )
+
+      } finally {
+        setCambiandoEstadoId(
+          null
+        )
+      }
+    }
+
+  /*
+    ========================================
+    QUITAR UN PACIENTE
+    DEL HORARIO SEMANAL
+
+    IMPORTANTE:
+
+    - No elimina al paciente.
+    - No elimina sesiones anteriores.
+    - No elimina a los otros pacientes.
+    - Solamente lo saca de este
+      horario semanal.
+
+    Si era el último paciente,
+    se desactiva el horario entero.
+    ========================================
+  */
+
+  const handleQuitarPacienteHorario =
+    async (
+      turno,
+      participante
+    ) => {
+      const paciente =
+        participante.paciente
 
       const pacienteId =
         paciente?._id ||
         paciente
 
-      setCambiandoEstadoId(
-        `${turnoReal._id}-${pacienteId}`
-      )
+      const nombrePaciente =
+        `${paciente?.nombre || ''} ${
+          paciente?.apellido || ''
+        }`.trim() ||
+        'este paciente'
 
-      const response =
-        await api.patch(
-          `/turnos/${turnoReal._id}/status`,
-          {
-            pacienteId,
-
-            estado:
-              nuevoEstado
-          }
+      if (
+        !turno.esHorarioFijo ||
+        !turno.horarioSemanalId
+      ) {
+        alert(
+          'Este registro ya corresponde a una atención del día. Para modificar el horario semanal hacelo desde Horarios.'
         )
 
-      const turnoActualizado =
-        response.data?.data ||
-        response.data
+        return
+      }
 
-      setTurnos((prev) =>
-        prev.map((item) =>
-          item._id ===
-          turnoReal._id
-            ? turnoActualizado
-            : item
+      const confirmado =
+        window.confirm(
+          `¿Querés quitar a ${nombrePaciente} de este horario semanal? Los demás pacientes seguirán agendados en este mismo horario.`
         )
-      )
 
-      setTurnoSeleccionado(
-        turnoActualizado
-      )
-    } catch (error) {
-      console.error(
-        'Error al cambiar estado:',
-        error
-      )
+      if (!confirmado) {
+        return
+      }
 
-      alert(
-        error.response?.data?.message ||
-        error.message ||
-        'No se pudo cambiar el estado'
-      )
-    } finally {
-      setCambiandoEstadoId(
-        null
-      )
+      try {
+        setQuitandoPacienteId(
+          pacienteId?.toString()
+        )
+
+        const horario =
+          horariosSemanales.find(
+            (item) =>
+              item._id ===
+              turno.horarioSemanalId
+          )
+
+        if (!horario) {
+          throw new Error(
+            'No se encontró el horario semanal'
+          )
+        }
+
+        const pacientesActuales =
+          Array.isArray(
+            horario.pacientes
+          )
+            ? horario.pacientes
+            : horario.paciente
+            ? [
+                horario.paciente
+              ]
+            : []
+
+        const pacientesRestantes =
+          pacientesActuales
+            .filter(
+              (item) =>
+                (
+                  item?._id ||
+                  item
+                )?.toString() !==
+                pacienteId?.toString()
+            )
+            .map(
+              (item) =>
+                item?._id ||
+                item
+            )
+
+        /*
+          SI ERA EL ÚLTIMO PACIENTE
+          DESACTIVAMOS EL HORARIO.
+        */
+
+        if (
+          pacientesRestantes.length ===
+          0
+        ) {
+          await api.delete(
+            `/horarios-semanales/${horario._id}`
+          )
+
+          setHorariosSemanales(
+            (prev) =>
+              prev.filter(
+                (item) =>
+                  item._id !==
+                  horario._id
+              )
+          )
+
+          setTurnoSeleccionado(
+            null
+          )
+
+          return
+        }
+
+        /*
+          SI QUEDAN PACIENTES,
+          MODIFICAMOS EL MISMO HORARIO.
+        */
+
+        const datos = {
+          pacientes:
+            pacientesRestantes,
+
+          diaSemana:
+            horario.diaSemana,
+
+          horaInicio:
+            horario.horaInicio,
+
+          horaFin:
+            horario.horaFin
+        }
+
+        if (
+          horario.fechaDesde
+        ) {
+          datos.fechaDesde =
+            horario.fechaDesde
+        }
+
+        if (
+          horario.fechaHasta
+        ) {
+          datos.fechaHasta =
+            horario.fechaHasta
+        } else {
+          datos.fechaHasta =
+            null
+        }
+
+        const response =
+          await api.put(
+            `/horarios-semanales/${horario._id}`,
+            datos
+          )
+
+        const actualizado =
+          response.data?.data ||
+          response.data
+
+        /*
+          ACTUALIZAMOS LOS HORARIOS
+          DE LA AGENDA.
+        */
+
+        setHorariosSemanales(
+          (prev) =>
+            prev.map(
+              (item) =>
+                item._id ===
+                actualizado._id
+                  ? actualizado
+                  : item
+            )
+        )
+
+        /*
+          Cerramos el detalle.
+          Al volver a abrirlo,
+          ya aparecerán únicamente
+          los pacientes restantes.
+        */
+
+        setTurnoSeleccionado(
+          null
+        )
+
+      } catch (error) {
+        console.error(
+          'Error al quitar paciente del horario:',
+          error
+        )
+
+        alert(
+          error.response?.data?.message ||
+          error.message ||
+          'No se pudo quitar al paciente del horario'
+        )
+
+      } finally {
+        setQuitandoPacienteId(
+          null
+        )
+      }
     }
-  }
 
   /*
+    ========================================
     FORMATOS
+    ========================================
   */
 
   const mostrarEstado = (
@@ -1142,8 +1294,11 @@ useEffect(() => {
     ).toLocaleTimeString(
       'es-UY',
       {
-        hour: '2-digit',
-        minute: '2-digit'
+        hour:
+          '2-digit',
+
+        minute:
+          '2-digit'
       }
     )
   }
@@ -1176,28 +1331,39 @@ useEffect(() => {
       )
 
     return (
-      texto.charAt(0).toUpperCase() +
+      texto
+        .charAt(0)
+        .toUpperCase() +
       texto.slice(1)
     )
   }
 
   /*
+    ========================================
     CAMBIAR VISTA
+    ========================================
   */
 
   const cambiarVista = (
     nuevaVista
   ) => {
-    setVista(nuevaVista)
+    setVista(
+      nuevaVista
+    )
 
-    setTurnoSeleccionado(null)
-    setMostrarFormulario(false)
-    setTurnoEditando(null)
-    setTurnoRegistrandoSesion(null)
+    setTurnoSeleccionado(
+      null
+    )
+
+    setTurnoRegistrandoSesion(
+      null
+    )
   }
 
   /*
+    ========================================
     LOADING
+    ========================================
   */
 
   if (loading) {
@@ -1217,7 +1383,9 @@ useEffect(() => {
   }
 
   /*
+    ========================================
     ERROR
+    ========================================
   */
 
   if (error) {
@@ -1250,33 +1418,18 @@ useEffect(() => {
           </h1>
 
           <p>
-            Gestioná tus turnos,
+            Tus horarios semanales,
             pacientes y sesiones.
           </p>
 
         </div>
 
-        {!mostrarFormulario &&
-          !turnoEditando &&
-          !turnoRegistrandoSesion && (
-
-            <button
-              type="button"
-              className="agenda-new-button"
-              onClick={() => {
-                setTurnoSeleccionado(
-                  null
-                )
-
-                setMostrarFormulario(
-                  true
-                )
-              }}
-            >
-              + Nuevo turno
-            </button>
-
-          )}
+        <Link
+          to="/horarios"
+          className="agenda-new-button"
+        >
+          + Nuevo horario
+        </Link>
 
       </div>
 
@@ -1334,43 +1487,6 @@ useEffect(() => {
 
       </div>
 
-      {/* CREAR TURNO */}
-
-      {mostrarFormulario && (
-        <div className="card">
-
-          <CrearTurnoForm
-            onCreated={
-              handleTurnoCreado
-            }
-            onCancel={
-              handleCancelarCreacion
-            }
-          />
-
-        </div>
-      )}
-
-      {/* EDITAR TURNO */}
-
-      {turnoEditando && (
-        <div className="card">
-
-          <EditarTurnoForm
-            turno={
-              turnoEditando
-            }
-            onUpdated={
-              handleTurnoActualizado
-            }
-            onCancel={
-              handleCancelarEdicion
-            }
-          />
-
-        </div>
-      )}
-
       {/* REGISTRAR SESIÓN */}
 
       {turnoRegistrandoSesion && (
@@ -1422,34 +1538,31 @@ useEffect(() => {
           </div>
 
         </div>
+
       )}
 
-      {/* CONTENIDO DE LA AGENDA */}
+      {/* AGENDA */}
 
       <section className="card">
-
-        {/* HOY */}
 
         {vista === 'hoy' && (
 
           <AgendaHoyGrid
-  turnos={
-    turnosOrdenados
-  }
-  horariosSemanales={
-    horariosSemanales
-  }
-  onTurnoClick={
-    handleSeleccionarTurno
-  }
-  onRegistrarSesion={
-    handleRegistrarSesionRapida
-  }
-/>
+            turnos={
+              turnosOrdenados
+            }
+            horariosSemanales={
+              horariosSemanales
+            }
+            onTurnoClick={
+              handleSeleccionarTurno
+            }
+            onRegistrarSesion={
+              handleRegistrarSesionRapida
+            }
+          />
 
         )}
-
-        {/* SEMANA */}
 
         {vista === 'semana' && (
 
@@ -1466,8 +1579,6 @@ useEffect(() => {
           />
 
         )}
-
-        {/* MES */}
 
         {vista === 'mes' && (
 
@@ -1487,7 +1598,7 @@ useEffect(() => {
 
       </section>
 
-      {/* MODAL DETALLE TURNO */}
+      {/* DETALLE DEL HORARIO */}
 
       {turnoSeleccionado && (
 
@@ -1507,21 +1618,21 @@ useEffect(() => {
             }
           >
 
-            {/* CABECERA */}
+            {/* HEADER */}
 
             <div className="agenda-modal-header">
 
               <div>
 
                 <h2>
-                  Detalle del turno
+                  Detalle del horario
                 </h2>
 
                 {turnoSeleccionado
                   .esHorarioFijo && (
 
                   <small>
-                    Horario fijo semanal
+                    Horario semanal
                   </small>
 
                 )}
@@ -1542,7 +1653,7 @@ useEffect(() => {
 
             </div>
 
-            {/* FECHA + HORARIO */}
+            {/* FECHA Y HORA */}
 
             <div className="agenda-turn-info">
 
@@ -1589,36 +1700,6 @@ useEffect(() => {
 
             </div>
 
-            {/* OBSERVACIÓN */}
-
-            {turnoSeleccionado
-              .observacion && (
-
-              <div
-                className="agenda-info-box"
-                style={{
-                  marginBottom:
-                    '20px'
-                }}
-              >
-
-                <span className="agenda-info-label">
-                  Observación
-                </span>
-
-                <span className="agenda-info-value">
-
-                  {
-                    turnoSeleccionado
-                      .observacion
-                  }
-
-                </span>
-
-              </div>
-
-            )}
-
             {/* PACIENTES */}
 
             <h3 className="agenda-patients-title">
@@ -1646,6 +1727,10 @@ useEffect(() => {
                   const idCambio =
                     `${turnoSeleccionado._id}-${pacienteId}`
 
+                  const quitando =
+                    quitandoPacienteId ===
+                    pacienteId?.toString()
+
                   return (
                     <article
                       key={
@@ -1661,15 +1746,8 @@ useEffect(() => {
 
                         <div className="agenda-patient-name">
 
-                          {
-                            paciente
-                              ?.nombre
-                          }{' '}
-
-                          {
-                            paciente
-                              ?.apellido
-                          }
+                          {paciente?.nombre}{' '}
+                          {paciente?.apellido}
 
                         </div>
 
@@ -1796,6 +1874,33 @@ useEffect(() => {
 
                         )}
 
+                        {/* QUITAR DEL HORARIO */}
+
+                        {turnoSeleccionado
+                          .esHorarioFijo &&
+                          turnoSeleccionado
+                            .horarioSemanalId && (
+
+                          <button
+                            type="button"
+                            className="agenda-action-button agenda-action-remove"
+                            disabled={
+                              quitando
+                            }
+                            onClick={() =>
+                              handleQuitarPacienteHorario(
+                                turnoSeleccionado,
+                                participante
+                              )
+                            }
+                          >
+                            {quitando
+                              ? 'Quitando...'
+                              : '🗑 Quitar del horario'}
+                          </button>
+
+                        )}
+
                       </div>
 
                     </article>
@@ -1809,17 +1914,17 @@ useEffect(() => {
 
             <div className="agenda-modal-footer">
 
-              <button
-                type="button"
+              <Link
+                to="/horarios"
                 className="agenda-edit-button"
                 onClick={() =>
-                  handleEditarTurno(
-                    turnoSeleccionado
+                  setTurnoSeleccionado(
+                    null
                   )
                 }
               >
-                Editar turno
-              </button>
+                Gestionar horarios
+              </Link>
 
               <button
                 type="button"
