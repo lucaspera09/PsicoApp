@@ -498,7 +498,9 @@ export default function PacientesPage() {
 
       {pacientesFiltrados.length ===
       0 ? (
+
         <section className="patients-empty">
+
           <div className="patients-empty-icon">
             ♡
           </div>
@@ -511,8 +513,11 @@ export default function PacientesPage() {
             Probá con otra búsqueda
             o agregá un paciente nuevo.
           </p>
+
         </section>
+
       ) : (
+
         <section className="patients-grid">
 
           {pacientesFiltrados.map(
@@ -530,17 +535,9 @@ export default function PacientesPage() {
                   className="patient-card"
                 >
 
-                  <div className="patient-card-top">
+                  {/* ESTADO */}
 
-                    <div className="patient-avatar">
-                      {paciente.nombre
-                        ?.charAt(0)
-                        ?.toUpperCase()}
-
-                      {paciente.apellido
-                        ?.charAt(0)
-                        ?.toUpperCase()}
-                    </div>
+                  <div className="patient-card-header">
 
                     <span
                       className={
@@ -556,71 +553,122 @@ export default function PacientesPage() {
 
                   </div>
 
-                  <div className="patient-card-body">
+                  {/* PERFIL */}
 
-                    <h2>
-                      {
-                        paciente.nombre
-                      }{' '}
+                  <div className="patient-card-profile">
 
-                      {
-                        paciente.apellido
-                      }
-                    </h2>
+                    <div className="patient-avatar">
 
-                    <div className="patient-info-list">
+                      {paciente.nombre
+                        ?.charAt(0)
+                        ?.toUpperCase()}
 
-                      <div>
-                        <span>
-                          Documento
-                        </span>
-
-                        <strong>
-                          {paciente.documento ||
-                            'Sin documento'}
-                        </strong>
-                      </div>
-
-                      <div>
-                        <span>
-                          Edad
-                        </span>
-
-                        <strong>
-                          {edad !== null
-                            ? `${edad} años`
-                            : 'Sin fecha'}
-                        </strong>
-                      </div>
-
-                      <div>
-                        <span>
-                          Nacimiento
-                        </span>
-
-                        <strong>
-                          {formatearFecha(
-                            paciente.fechaNacimiento
-                          )}
-                        </strong>
-                      </div>
+                      {paciente.apellido
+                        ?.charAt(0)
+                        ?.toUpperCase()}
 
                     </div>
 
+                    <h2>
+                      {paciente.nombre}{' '}
+                      {paciente.apellido}
+                    </h2>
+
+                    <span className="patient-card-subtitle">
+                      Paciente
+                    </span>
+
                   </div>
+
+                  {/* DATOS */}
+
+                  <div className="patient-card-stats">
+
+                    <div>
+                      <strong>
+                        {edad !== null
+                          ? edad
+                          : '—'}
+                      </strong>
+
+                      <span>
+                        Edad
+                      </span>
+                    </div>
+
+                    <div>
+                      <strong>
+                        {paciente.documento ||
+                          '—'}
+                      </strong>
+
+                      <span>
+                        Documento
+                      </span>
+                    </div>
+
+                  </div>
+
+                  {/* NACIMIENTO */}
+
+                  <div className="patient-card-detail">
+
+                    <span>
+                      Nacimiento
+                    </span>
+
+                    <strong>
+                      {formatearFecha(
+                        paciente.fechaNacimiento
+                      )}
+                    </strong>
+
+                  </div>
+
+                  {/* ESTADO VISUAL */}
+
+                  <div className="patient-card-progress">
+
+                    <div className="patient-card-progress-top">
+
+                      <span>
+                        Estado
+                      </span>
+
+                      <strong>
+                        {paciente.activo
+                          ? 'Activo'
+                          : 'Pausado'}
+                      </strong>
+
+                    </div>
+
+                    <div className="patient-card-progress-track">
+                      <span
+                        className={
+                          paciente.activo
+                            ? 'active'
+                            : 'inactive'
+                        }
+                      />
+                    </div>
+
+                  </div>
+
+                  {/* ACCIONES */}
 
                   <div className="patient-card-actions">
 
                     <Link
                       to={`/pacientes/${paciente._id}`}
-                      className="patient-primary-action"
+                      className="patient-secondary-action"
                     >
                       Ver ficha
                     </Link>
 
                     <button
                       type="button"
-                      className="patient-secondary-action"
+                      className="patient-primary-action"
                       onClick={() =>
                         handleEditarPaciente(
                           paciente
@@ -663,6 +711,7 @@ export default function PacientesPage() {
           )}
 
         </section>
+
       )}
 
     </main>

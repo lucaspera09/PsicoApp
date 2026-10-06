@@ -7,7 +7,108 @@ import {
 import { Link } from 'react-router'
 import { useSelector } from 'react-redux'
 
+
 import api from '../../api/api.js'
+import PacienteQuickPanel from './PacienteQuickPanel.jsx'
+
+/*
+  ========================================
+  CONTADOR ANIMADO
+  ========================================
+*/
+
+function CountUpNumber({
+  value = 0,
+  duration = 700,
+  suffix = ''
+}) {
+  const [
+    displayedValue,
+    setDisplayedValue
+  ] = useState(0)
+
+  useEffect(() => {
+    const finalValue =
+      Number(value) || 0
+
+    if (finalValue === 0) {
+      setDisplayedValue(0)
+
+      return
+    }
+
+    let animationFrame
+
+    const startTime =
+      performance.now()
+
+    const animate = (
+      currentTime
+    ) => {
+      const elapsed =
+        currentTime -
+        startTime
+
+      const progress =
+        Math.min(
+          elapsed /
+            duration,
+          1
+        )
+
+      /*
+        Easing suave:
+        arranca rápido
+        y termina despacio.
+      */
+      const eased =
+        1 -
+        Math.pow(
+          1 - progress,
+          3
+        )
+
+      setDisplayedValue(
+        Math.round(
+          finalValue *
+            eased
+        )
+      )
+
+      if (
+        progress < 1
+      ) {
+        animationFrame =
+          requestAnimationFrame(
+            animate
+          )
+      }
+    }
+
+    animationFrame =
+      requestAnimationFrame(
+        animate
+      )
+
+    return () => {
+      if (animationFrame) {
+        cancelAnimationFrame(
+          animationFrame
+        )
+      }
+    }
+  }, [
+    value,
+    duration
+  ])
+
+  return (
+    <>
+      {displayedValue}
+      {suffix}
+    </>
+  )
+}
 
 export default function DashboardProfesional() {
   const { user } = useSelector(
@@ -19,65 +120,112 @@ export default function DashboardProfesional() {
     user?.email ||
     'Profesional'
 
-  const [turnos, setTurnos] =
-    useState([])
+  const [
+    turnos,
+    setTurnos
+  ] = useState([])
 
   const [
     horariosSemanales,
     setHorariosSemanales
   ] = useState([])
 
-  const [loadingAgenda, setLoadingAgenda] =
-    useState(true)
+  const [
+    pacientes,
+    setPacientes
+  ] = useState([])
+
+  const [
+    loadingAgenda,
+    setLoadingAgenda
+  ] = useState(true)
+
+  const [
+  pacientePanel,
+  setPacientePanel
+] = useState(null)
 
   /*
-    CARGAR TURNOS + HORARIOS FIJOS
+    ========================================
+    CARGAR DATOS DEL DASHBOARD
+    ========================================
   */
 
   useEffect(() => {
-    const cargarHoy = async () => {
-      try {
-        setLoadingAgenda(true)
+    const cargarDashboard =
+      async () => {
+        try {
+          setLoadingAgenda(true)
 
-        const [
-          responseTurnos,
-          responseHorarios
-        ] = await Promise.all([
-          api.get('/turnos'),
-          api.get('/horarios-semanales')
-        ])
+          const [
+            responseTurnos,
+            responseHorarios,
+            responsePacientes
+          ] = await Promise.all([
+            api.get('/turnos'),
 
-        const turnosRecibidos =
-          responseTurnos.data?.data ||
-          responseTurnos.data
+            api.get(
+              '/horarios-semanales'
+            ),
 
-        const horariosRecibidos =
-          responseHorarios.data?.data ||
-          responseHorarios.data
+            api.get('/pacientes')
+          ])
 
-        setTurnos(
-          Array.isArray(turnosRecibidos)
-            ? turnosRecibidos
-            : []
-        )
+          const turnosRecibidos =
+            responseTurnos.data?.data ||
+            responseTurnos.data
 
-        setHorariosSemanales(
-          Array.isArray(horariosRecibidos)
-            ? horariosRecibidos
-            : []
-        )
-      } catch (error) {
-        console.error(
-          'Error al cargar turnos de hoy:',
-          error
-        )
-      } finally {
-        setLoadingAgenda(false)
+          const horariosRecibidos =
+            responseHorarios.data?.data ||
+            responseHorarios.data
+
+          const pacientesRecibidos =
+            responsePacientes.data?.data ||
+            responsePacientes.data
+
+          setTurnos(
+            Array.isArray(
+              turnosRecibidos
+            )
+              ? turnosRecibidos
+              : []
+          )
+
+          setHorariosSemanales(
+            Array.isArray(
+              horariosRecibidos
+            )
+              ? horariosRecibidos
+              : []
+          )
+
+          setPacientes(
+            Array.isArray(
+              pacientesRecibidos
+            )
+              ? pacientesRecibidos
+              : []
+          )
+
+        } catch (error) {
+          console.error(
+            'Error al cargar dashboard:',
+            error
+          )
+
+        } finally {
+          setLoadingAgenda(false)
+        }
       }
-    }
 
-    cargarHoy()
+    cargarDashboard()
   }, [])
+
+  /*
+    ========================================
+    HELPERS
+    ========================================
+  */
 
   const esMismoDia = (
     fecha1,
@@ -97,8 +245,13 @@ export default function DashboardProfesional() {
     fechaBase,
     hora
   ) => {
-    const [horas, minutos] =
-      hora.split(':').map(Number)
+    const [
+      horas,
+      minutos
+    ] =
+      hora
+        .split(':')
+        .map(Number)
 
     const fecha =
       new Date(fechaBase)
@@ -217,7 +370,9 @@ export default function DashboardProfesional() {
   }
 
   /*
-    ARMAR LOS TURNOS DE HOY
+    ========================================
+    TURNOS DE HOY
+    ========================================
   */
 
   const turnosHoy =
@@ -266,7 +421,7 @@ export default function DashboardProfesional() {
                   horario.horaFin
                 )
 
-              const pacientes =
+              const pacientesHorario =
                 obtenerPacientesHorario(
                   horario
                 )
@@ -290,9 +445,12 @@ export default function DashboardProfesional() {
                   fin.toISOString(),
 
                 participantes:
-                  pacientes.map(
-                    (paciente) => ({
+                  pacientesHorario.map(
+                    (
+                      paciente
+                    ) => ({
                       paciente,
+
                       estado:
                         'programado'
                     })
@@ -302,18 +460,22 @@ export default function DashboardProfesional() {
           )
           .filter(
             (turno) =>
-              turno.participantes.length >
-              0
+              turno
+                .participantes
+                .length > 0
           )
 
       /*
-        Evitamos mostrar el horario fijo
-        si ya existe el turno real.
+        Evitamos mostrar dos veces
+        un horario que ya se convirtió
+        en turno real.
       */
 
       const horariosSinDuplicar =
         horariosVirtuales.filter(
-          (horarioVirtual) => {
+          (
+            horarioVirtual
+          ) => {
             return !turnosReales.some(
               (turnoReal) => {
                 const fechaReal =
@@ -342,7 +504,9 @@ export default function DashboardProfesional() {
                     []
                   )
                     .map(
-                      (participante) =>
+                      (
+                        participante
+                      ) =>
                         obtenerIdPaciente(
                           participante.paciente
                         )
@@ -356,7 +520,9 @@ export default function DashboardProfesional() {
                     []
                   )
                     .map(
-                      (participante) =>
+                      (
+                        participante
+                      ) =>
                         obtenerIdPaciente(
                           participante.paciente
                         )
@@ -372,7 +538,10 @@ export default function DashboardProfesional() {
                 }
 
                 return idsReal.every(
-                  (id, index) =>
+                  (
+                    id,
+                    index
+                  ) =>
                     id ===
                     idsVirtual[index]
                 )
@@ -393,10 +562,17 @@ export default function DashboardProfesional() {
             b.fechaInicio
           )
       )
+
     }, [
       turnos,
       horariosSemanales
     ])
+
+  /*
+    ========================================
+    FORMATO DE HORA
+    ========================================
+  */
 
   const mostrarHora = (
     fecha
@@ -406,18 +582,29 @@ export default function DashboardProfesional() {
     ).toLocaleTimeString(
       'es-UY',
       {
-        hour: '2-digit',
-        minute: '2-digit'
+        hour:
+          '2-digit',
+
+        minute:
+          '2-digit'
       }
     )
   }
+
+  /*
+    ========================================
+    NOMBRES DE PACIENTES
+    ========================================
+  */
 
   const obtenerNombres = (
     participantes = []
   ) => {
     return participantes
       .map(
-        (participante) => {
+        (
+          participante
+        ) => {
           const paciente =
             participante.paciente
 
@@ -429,10 +616,18 @@ export default function DashboardProfesional() {
       .filter(Boolean)
   }
 
+  /*
+    ========================================
+    SESIÓN PENDIENTE
+    ========================================
+  */
+
   const haySesionPendiente = (
     turno
   ) => {
-    if (turno.esHorarioFijo) {
+    if (
+      turno.esHorarioFijo
+    ) {
       return true
     }
 
@@ -440,18 +635,156 @@ export default function DashboardProfesional() {
       turno.participantes ||
       []
     ).some(
-      (participante) =>
+      (
+        participante
+      ) =>
         participante.estado ===
         'programado'
     )
   }
 
+  /*
+    ========================================
+    ESTADÍSTICAS
+    ========================================
+  */
+
+  const pacientesActivos =
+    useMemo(
+      () =>
+        pacientes.filter(
+          (
+            paciente
+          ) =>
+            paciente.activo !==
+            false
+        ).length,
+      [pacientes]
+    )
+
+  const totalAtencionesHoy =
+    useMemo(
+      () =>
+        turnosHoy.reduce(
+          (
+            total,
+            turno
+          ) =>
+            total +
+            (
+              turno.participantes ||
+              []
+            ).length,
+          0
+        ),
+      [turnosHoy]
+    )
+
+  const sesionesRealizadasHoy =
+    useMemo(
+      () =>
+        turnosHoy.reduce(
+          (
+            total,
+            turno
+          ) =>
+            total +
+            (
+              turno.participantes ||
+              []
+            ).filter(
+              (
+                participante
+              ) =>
+                participante.estado ===
+                'realizado'
+            ).length,
+          0
+        ),
+      [turnosHoy]
+    )
+
+  const sesionesPendientesHoy =
+    Math.max(
+      0,
+      totalAtencionesHoy -
+        sesionesRealizadasHoy
+    )
+
+  const porcentajeCompletado =
+    totalAtencionesHoy > 0
+      ? Math.round(
+          (
+            sesionesRealizadasHoy /
+            totalAtencionesHoy
+          ) * 100
+        )
+      : 0
+
+  /*
+    ========================================
+    PRÓXIMO TURNO
+    ========================================
+  */
+
+  const proximoTurno =
+    useMemo(() => {
+      const ahora =
+        new Date()
+
+      const futuro =
+        turnosHoy.find(
+          (turno) =>
+            new Date(
+              turno.fechaFin
+            ) >= ahora
+        )
+
+      return (
+        futuro ||
+        turnosHoy[
+          turnosHoy.length - 1
+        ] ||
+        null
+      )
+    }, [turnosHoy])
+
+  /*
+    ========================================
+    FECHA ACTUAL
+    ========================================
+  */
+
+  const fechaHoy =
+    new Date()
+      .toLocaleDateString(
+        'es-UY',
+        {
+          weekday:
+            'long',
+
+          day:
+            'numeric',
+
+          month:
+            'long'
+        }
+      )
+
+  const fechaTitulo =
+    fechaHoy
+      .charAt(0)
+      .toUpperCase() +
+    fechaHoy.slice(1)
+
   return (
-    <main className="dashboard-page">
+    <main className="dashboard-page dashboard-bento">
 
-      {/* ENCABEZADO */}
+      {/* =====================
+          HEADER
+      ====================== */}
 
-      <section className="dashboard-hero">
+      <section className="dashboard-bento-header">
 
         <div>
 
@@ -464,320 +797,782 @@ export default function DashboardProfesional() {
           </h1>
 
           <p>
-            Registrá rápido lo importante
-            y seguí con tu día.
+            Tenés todo lo importante
+            de hoy en un solo lugar.
           </p>
 
         </div>
 
-      </section>
+        <div className="dashboard-date-chip">
 
-      {/* ACCIONES PRINCIPALES */}
-
-      <section className="dashboard-main-actions">
-
-        <Link
-          to="/agenda"
-          className="dashboard-main-action dashboard-main-session"
-        >
-
-          <div className="dashboard-main-icon">
-            📝
-          </div>
-
-          <div className="dashboard-main-content">
-
-            <span className="dashboard-main-label">
-              Al terminar una atención
-            </span>
-
-            <h2>
-              Registrar sesión
-            </h2>
-
-            <p>
-              Elegí el turno y anotá
-              rápidamente lo trabajado.
-            </p>
-
-          </div>
-
-          <span className="dashboard-main-arrow">
-            →
+          <span>
+            Hoy
           </span>
 
-        </Link>
-
-        <Link
-          to="/nota-rapida"
-          className="dashboard-main-action dashboard-main-note"
-        >
-
-          <div className="dashboard-main-icon">
-            ✍️
-          </div>
-
-          <div className="dashboard-main-content">
-
-            <span className="dashboard-main-label">
-              Mientras hablás con alguien
-            </span>
-
-            <h2>
-              Nueva nota rápida
-            </h2>
-
-            <p>
-              Elegí un paciente y registrá
-              una conversación u observación.
-            </p>
-
-          </div>
-
-          <span className="dashboard-main-arrow">
-            →
-          </span>
-
-        </Link>
-
-      </section>
-
-      {/* TURNOS DE HOY */}
-
-      <section className="dashboard-today-section">
-
-        <div className="dashboard-section-heading">
-
-          <div>
-
-            <h2>
-              Turnos de hoy
-            </h2>
-
-            <p>
-              Registrá una sesión apenas
-              termina la atención.
-            </p>
-
-          </div>
-
-          <Link
-            to="/agenda"
-            className="dashboard-see-agenda"
-          >
-            Ver agenda →
-          </Link>
+          <strong>
+            {fechaTitulo}
+          </strong>
 
         </div>
 
-        {loadingAgenda ? (
+      </section>
 
-          <div className="dashboard-today-empty">
-            Cargando turnos...
-          </div>
+      {/* =====================
+          MÉTRICAS
+      ====================== */}
 
-        ) : turnosHoy.length === 0 ? (
+      <section className="dashboard-stats">
 
-          <div className="dashboard-today-empty">
+        {/* PACIENTES */}
 
-            <strong>
-              No hay turnos para hoy
-            </strong>
+        <article className="dashboard-stat-card dashboard-animate dashboard-delay-1">
+
+          <div className="dashboard-stat-top">
 
             <span>
-              Podés consultar otros días
-              desde la Agenda.
+              Pacientes
             </span>
 
-          </div>
-
-        ) : (
-
-          <div className="dashboard-today-list">
-
-            {turnosHoy.map(
-              (turno) => {
-                const nombres =
-                  obtenerNombres(
-                    turno.participantes
-                  )
-
-                const pendiente =
-                  haySesionPendiente(
-                    turno
-                  )
-
-                return (
-                  <article
-                    key={
-                      turno._id
-                    }
-                    className="dashboard-today-turn"
-                  >
-
-                    <div className="dashboard-today-time">
-
-                      <strong>
-                        {mostrarHora(
-                          turno.fechaInicio
-                        )}
-                      </strong>
-
-                      <span>
-                        {mostrarHora(
-                          turno.fechaFin
-                        )}
-                      </span>
-
-                    </div>
-
-                    <div className="dashboard-today-info">
-
-                      <strong>
-                        {nombres.length > 0
-                          ? nombres.join(', ')
-                          : 'Sin paciente'}
-                      </strong>
-
-                      <span>
-                        {turno.esHorarioFijo
-                          ? 'Horario fijo'
-                          : nombres.length === 1
-                          ? 'Sesión individual'
-                          : `${nombres.length} pacientes`}
-                      </span>
-
-                    </div>
-
-                    {pendiente ? (
-
-                      <Link
-                        to="/agenda"
-                        state={{
-                          registrarSesion:
-                            turno
-                        }}
-                        className="dashboard-today-register"
-                      >
-                        📝 Registrar sesión
-                      </Link>
-
-                    ) : (
-
-                      <span className="dashboard-today-done">
-                        ✓ Realizado
-                      </span>
-
-                    )}
-
-                  </article>
-                )
-              }
-            )}
-
-          </div>
-
-        )}
-
-      </section>
-
-      {/* ACCESOS SECUNDARIOS */}
-
-      <section className="dashboard-secondary-section">
-
-        <div className="dashboard-section-heading">
-
-          <div>
-
-            <h2>
-              Otras herramientas
-            </h2>
-
-            <p>
-              Accesos para organizar
-              y consultar información.
-            </p>
-
-          </div>
-
-        </div>
-
-        <div className="dashboard-actions-grid">
-
-          <Link
-            to="/agenda"
-            className="dashboard-action-card"
-          >
-
-            <div className="dashboard-action-icon">
-              ◫
-            </div>
-
-            <div>
-
-              <strong>
-                Agenda
-              </strong>
-
-              <span>
-                Ver los turnos del día,
-                semana o mes
-              </span>
-
-            </div>
-
-          </Link>
-
-          <Link
-            to="/pacientes"
-            className="dashboard-action-card"
-          >
-
-            <div className="dashboard-action-icon">
+            <div className="dashboard-stat-icon">
               ♡
             </div>
 
-            <div>
+          </div>
 
-              <strong>
-                Pacientes
-              </strong>
+          <strong className="dashboard-stat-number">
 
-              <span>
-                Fichas, historial
-                e información clínica
-              </span>
+            <CountUpNumber
+              value={
+                pacientesActivos
+              }
+            />
 
-            </div>
+          </strong>
 
-          </Link>
+          <small>
+            pacientes activos
+          </small>
 
-          <Link
-            to="/horarios"
-            className="dashboard-action-card"
-          >
+        </article>
 
-            <div className="dashboard-action-icon">
+        {/* HOY */}
+
+        <article className="dashboard-stat-card dashboard-stat-primary dashboard-animate dashboard-delay-2">
+
+          <div className="dashboard-stat-top">
+
+            <span>
+              Hoy
+            </span>
+
+            <div className="dashboard-stat-icon">
               ◷
             </div>
 
+          </div>
+
+          <strong className="dashboard-stat-number">
+
+            <CountUpNumber
+              value={
+                totalAtencionesHoy
+              }
+              duration={750}
+            />
+
+          </strong>
+
+          <small>
+            atenciones programadas
+          </small>
+
+        </article>
+
+        {/* PENDIENTES */}
+
+        <article className="dashboard-stat-card dashboard-animate dashboard-delay-3">
+
+          <div className="dashboard-stat-top">
+
+            <span>
+              Pendientes
+            </span>
+
+            <div className="dashboard-stat-icon">
+              ↗
+            </div>
+
+          </div>
+
+          <strong className="dashboard-stat-number">
+
+            <CountUpNumber
+              value={
+                sesionesPendientesHoy
+              }
+              duration={800}
+            />
+
+          </strong>
+
+          <small>
+            por registrar
+          </small>
+
+        </article>
+
+        {/* REALIZADAS */}
+
+        <article className="dashboard-stat-card dashboard-animate dashboard-delay-4">
+
+          <div className="dashboard-stat-top">
+
+            <span>
+              Realizadas
+            </span>
+
+            <div className="dashboard-stat-icon dashboard-stat-success">
+              ✓
+            </div>
+
+          </div>
+
+          <strong className="dashboard-stat-number">
+
+            <CountUpNumber
+              value={
+                sesionesRealizadasHoy
+              }
+              duration={850}
+            />
+
+          </strong>
+
+          <small>
+            sesiones de hoy
+          </small>
+
+        </article>
+
+      </section>
+
+      {/* =====================
+          BENTO PRINCIPAL
+      ====================== */}
+
+      <section className="dashboard-bento-grid">
+
+        {/* =====================
+            AGENDA DE HOY
+        ====================== */}
+
+        <article className="dashboard-bento-card dashboard-agenda-card dashboard-animate dashboard-delay-2">
+
+          <div className="dashboard-card-header">
+
             <div>
 
+              <span className="dashboard-card-eyebrow">
+                Organización
+              </span>
+
+              <h2>
+                Agenda de hoy
+              </h2>
+
+            </div>
+
+            <Link
+              to="/agenda"
+              className="dashboard-card-link"
+            >
+              Ver agenda
+
+              <span>
+                →
+              </span>
+
+            </Link>
+
+          </div>
+
+          {loadingAgenda ? (
+
+            <div className="dashboard-agenda-empty">
+              Cargando agenda...
+            </div>
+
+          ) : turnosHoy.length ===
+          0 ? (
+
+            <div className="dashboard-agenda-empty">
+
+              <div className="dashboard-empty-icon">
+                ◷
+              </div>
+
               <strong>
-                Horarios fijos
+                Día libre
               </strong>
 
               <span>
-                Organizar la agenda semanal
+                No tenés pacientes
+                programados para hoy.
               </span>
 
             </div>
 
-          </Link>
+          ) : (
 
-        </div>
+            <div className="dashboard-agenda-list">
+
+              {turnosHoy
+                .slice(
+                  0,
+                  6
+                )
+                .map(
+                  (
+                    turno
+                  ) => {
+                    const nombres =
+                      obtenerNombres(
+                        turno.participantes
+                      )
+
+                    const pendiente =
+                      haySesionPendiente(
+                        turno
+                      )
+
+                    return (
+                      <div
+                        key={
+                          turno._id
+                        }
+                        className="dashboard-agenda-row"
+                      >
+
+                        {/* HORA */}
+
+                        <div className="dashboard-agenda-time">
+
+                          <strong>
+                            {mostrarHora(
+                              turno.fechaInicio
+                            )}
+                          </strong>
+
+                          <span>
+                            {mostrarHora(
+                              turno.fechaFin
+                            )}
+                          </span>
+
+                        </div>
+
+                        {/* PACIENTES */}
+
+                        <div className="dashboard-agenda-patients">
+
+                          <div className="dashboard-patient-links">
+
+  {(
+    turno.participantes ||
+    []
+  ).map(
+    (
+      participante,
+      index
+    ) => {
+      const paciente =
+        participante.paciente
+
+      const nombrePaciente =
+        `${paciente?.nombre || ''} ${
+          paciente?.apellido || ''
+        }`.trim()
+
+      return (
+        <button
+          key={
+            paciente?._id ||
+            index
+          }
+          type="button"
+          className="dashboard-patient-link"
+          onClick={() =>
+            setPacientePanel(
+              paciente
+            )
+          }
+        >
+          {nombrePaciente}
+        </button>
+      )
+    }
+  )}
+
+</div>
+
+                          <span>
+                            {nombres.length ===
+                            1
+                              ? 'Sesión individual'
+                              : `${nombres.length} pacientes`}
+                          </span>
+
+                        </div>
+
+                        {/* ACCIÓN */}
+
+                        {pendiente ? (
+
+                          <Link
+                            to="/agenda"
+                            state={{
+                              registrarSesion:
+                                turno
+                            }}
+                            className="dashboard-row-action"
+                          >
+                            Registrar
+                          </Link>
+
+                        ) : (
+
+                          <span className="dashboard-row-done">
+                            ✓
+                          </span>
+
+                        )}
+
+                      </div>
+                    )
+                  }
+                )}
+
+              {turnosHoy.length >
+                6 && (
+
+                <Link
+                  to="/agenda"
+                  className="dashboard-more-turns"
+                >
+                  Ver{' '}
+                  {
+                    turnosHoy.length -
+                    6
+                  }{' '}
+                  más
+                </Link>
+
+              )}
+
+            </div>
+
+          )}
+
+        </article>
+
+        {/* =====================
+            PRÓXIMO TURNO
+        ====================== */}
+
+        <article className="dashboard-bento-card dashboard-next-card dashboard-animate dashboard-delay-3">
+
+          <div className="dashboard-card-header">
+
+            <div>
+
+              <span className="dashboard-card-eyebrow">
+                Ahora
+              </span>
+
+              <h2>
+                Próximo turno
+              </h2>
+
+            </div>
+
+            <div className="dashboard-live-dot">
+
+              <span />
+
+              Hoy
+
+            </div>
+
+          </div>
+
+          {proximoTurno ? (
+
+            <>
+
+              <div className="dashboard-next-time">
+
+                <strong>
+                  {mostrarHora(
+                    proximoTurno.fechaInicio
+                  )}
+                </strong>
+
+                <span>
+                  hasta las{' '}
+                  {mostrarHora(
+                    proximoTurno.fechaFin
+                  )}
+                </span>
+
+              </div>
+
+              <div className="dashboard-next-patients">
+
+  {(
+    proximoTurno.participantes ||
+    []
+  ).map(
+    (
+      participante,
+      index
+    ) => {
+      const paciente =
+        participante.paciente
+
+      const nombrePaciente =
+        `${paciente?.nombre || ''} ${
+          paciente?.apellido || ''
+        }`.trim()
+
+      return (
+        <button
+          key={
+            paciente?._id ||
+            index
+          }
+          type="button"
+          className="dashboard-next-person"
+          onClick={() =>
+            setPacientePanel(
+              paciente
+            )
+          }
+        >
+
+          <div className="dashboard-next-avatar">
+
+            {paciente?.nombre
+              ?.charAt(0)
+              ?.toUpperCase()}
+
+          </div>
+
+          <span>
+            {nombrePaciente}
+          </span>
+
+          <small>
+            →
+          </small>
+
+        </button>
+      )
+    }
+  )}
+
+</div>
+              {haySesionPendiente(
+                proximoTurno
+              ) && (
+
+                <Link
+                  to="/agenda"
+                  state={{
+                    registrarSesion:
+                      proximoTurno
+                  }}
+                  className="dashboard-next-button"
+                >
+                  📝 Registrar sesión
+                </Link>
+
+              )}
+
+            </>
+
+          ) : (
+
+            <div className="dashboard-next-empty">
+
+              <div>
+                ✓
+              </div>
+
+              <strong>
+                Sin turnos pendientes
+              </strong>
+
+              <span>
+                No hay más pacientes
+                programados para hoy.
+              </span>
+
+            </div>
+
+          )}
+
+        </article>
+
+        {/* =====================
+            ACCIONES RÁPIDAS
+        ====================== */}
+
+        <article className="dashboard-bento-card dashboard-quick-card dashboard-animate dashboard-delay-3">
+
+          <div className="dashboard-card-header">
+
+            <div>
+
+              <span className="dashboard-card-eyebrow">
+                Accesos
+              </span>
+
+              <h2>
+                Acciones rápidas
+              </h2>
+
+            </div>
+
+          </div>
+
+          <div className="dashboard-quick-grid">
+
+            {/* REGISTRAR SESIÓN */}
+
+            <Link
+              to="/agenda"
+              className="dashboard-quick-action primary"
+            >
+
+              <span>
+                📝
+              </span>
+
+              <div>
+
+                <strong>
+                  Registrar sesión
+                </strong>
+
+                <small>
+                  Después de una atención
+                </small>
+
+              </div>
+
+            </Link>
+
+            {/* NOTA */}
+
+            <Link
+              to="/nota-rapida"
+              className="dashboard-quick-action"
+            >
+
+              <span>
+                ✍️
+              </span>
+
+              <div>
+
+                <strong>
+                  Nueva nota
+                </strong>
+
+                <small>
+                  Conversación u observación
+                </small>
+
+              </div>
+
+            </Link>
+
+            {/* PACIENTES */}
+
+            <Link
+              to="/pacientes"
+              className="dashboard-quick-action"
+            >
+
+              <span>
+                ♡
+              </span>
+
+              <div>
+
+                <strong>
+                  Pacientes
+                </strong>
+
+                <small>
+                  Ver fichas clínicas
+                </small>
+
+              </div>
+
+            </Link>
+
+            {/* HORARIOS */}
+
+            <Link
+              to="/horarios"
+              className="dashboard-quick-action"
+            >
+
+              <span>
+                ◷
+              </span>
+
+              <div>
+
+                <strong>
+                  Horarios
+                </strong>
+
+                <small>
+                  Organizar semana
+                </small>
+
+              </div>
+
+            </Link>
+
+          </div>
+
+        </article>
+
+        {/* =====================
+            PROGRESO DE HOY
+        ====================== */}
+
+        <article className="dashboard-bento-card dashboard-progress-card dashboard-animate dashboard-delay-4">
+
+          <div className="dashboard-card-header">
+
+            <div>
+
+              <span className="dashboard-card-eyebrow">
+                Jornada
+              </span>
+
+              <h2>
+                Progreso de hoy
+              </h2>
+
+            </div>
+
+          </div>
+
+          <div className="dashboard-progress-main">
+
+            {/* CÍRCULO */}
+
+            <div
+              className="dashboard-progress-ring"
+              style={{
+                '--dashboard-progress':
+                  `${porcentajeCompletado}%`
+              }}
+            >
+
+              <div>
+
+                <strong>
+
+                  <CountUpNumber
+                    value={
+                      porcentajeCompletado
+                    }
+                    suffix="%"
+                    duration={900}
+                  />
+
+                </strong>
+
+                <span>
+                  completado
+                </span>
+
+              </div>
+
+            </div>
+
+            {/* DETALLES */}
+
+            <div className="dashboard-progress-details">
+
+              <div>
+
+                <span className="dashboard-progress-dot done" />
+
+                <p>
+                  Realizadas
+                </p>
+
+                <strong>
+
+                  <CountUpNumber
+                    value={
+                      sesionesRealizadasHoy
+                    }
+                  />
+
+                </strong>
+
+              </div>
+
+              <div>
+
+                <span className="dashboard-progress-dot pending" />
+
+                <p>
+                  Pendientes
+                </p>
+
+                <strong>
+
+                  <CountUpNumber
+                    value={
+                      sesionesPendientesHoy
+                    }
+                  />
+
+                </strong>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </article>
 
       </section>
+      {pacientePanel && (
+  <PacienteQuickPanel
+    pacienteInicial={
+      pacientePanel
+    }
+    horariosSemanales={
+      horariosSemanales
+    }
+    onClose={() =>
+      setPacientePanel(
+        null
+      )
+    }
+  />
+)}
 
     </main>
   )

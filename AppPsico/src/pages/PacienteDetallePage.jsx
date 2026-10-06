@@ -5,6 +5,7 @@ import {
 
 import {
   Link,
+  useLocation,
   useParams
 } from 'react-router'
 
@@ -20,6 +21,9 @@ import HorariosPaciente from '../components/pacientes/HorariosPaciente.jsx'
 export default function PacienteDetallePage() {
   const { id } =
     useParams()
+
+    const location =
+  useLocation()
 
   const [
     paciente,
@@ -42,11 +46,12 @@ export default function PacienteDetallePage() {
   ] = useState(false)
 
   const [
-    seccionActiva,
-    setSeccionActiva
-  ] = useState(
-    'resumen'
-  )
+  seccionActiva,
+  setSeccionActiva
+] = useState(
+  location.state?.tab ||
+  'resumen'
+)
 
   useEffect(() => {
     const cargarPaciente =

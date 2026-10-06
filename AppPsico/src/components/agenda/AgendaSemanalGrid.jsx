@@ -783,23 +783,35 @@ export default function AgendaSemanalGrid({
 
             return (
               <div
-                key={dia.toISOString()}
-                className={
-                  esHoy
-                    ? 'week-day-header today'
-                    : 'week-day-header'
-                }
-              >
-                <span>
-                  {tituloDia(dia)}
-                </span>
+  key={dia.toISOString()}
+  className={
+    esHoy
+      ? 'week-day-header today'
+      : 'week-day-header'
+  }
+>
+  <span className="week-day-name">
+    {dia
+      .toLocaleDateString(
+        'es-UY',
+        {
+          weekday: 'short'
+        }
+      )
+      .replace('.', '')
+      .toUpperCase()}
+  </span>
 
-                {esHoy && (
-                  <small>
-                    Hoy
-                  </small>
-                )}
-              </div>
+  <strong className="week-day-number">
+    {dia.getDate()}
+  </strong>
+
+  {esHoy && (
+    <small className="week-day-today">
+      Hoy
+    </small>
+  )}
+</div>
             )
           })}
 
@@ -907,46 +919,43 @@ export default function AgendaSemanalGrid({
 
                         <div className="week-turn-patients">
 
-                          {participantes.map(
-                            (
-                              participante,
-                              index
-                            ) => {
-                              const paciente =
-                                participante.paciente
+                          {participantes
+  .slice(0, 2)
+  .map(
+    (
+      participante,
+      index
+    ) => {
+      const paciente =
+        participante.paciente
 
-                              return (
-                                <div
-                                  key={
-                                    obtenerIdPaciente(
-                                      paciente
-                                    ) ||
-                                    index
-                                  }
-                                  className="week-turn-patient"
-                                >
+      return (
+        <div
+          key={
+            obtenerIdPaciente(
+              paciente
+            ) ||
+            index
+          }
+          className="week-turn-patient"
+        >
+          <strong>
+            {paciente?.nombre}{' '}
+            {paciente?.apellido}
+          </strong>
+        </div>
+      )
+    }
+  )}
 
-                                  <strong>
-                                    {paciente?.nombre}{' '}
-                                    {paciente?.apellido}
-                                  </strong>
-
-                                  {!turno.esHorarioFijo && (
-                                    <span
-                                      className={`week-turn-status ${claseEstado(
-                                        participante.estado
-                                      )}`}
-                                    >
-                                      {mostrarEstado(
-                                        participante.estado
-                                      )}
-                                    </span>
-                                  )}
-
-                                </div>
-                              )
-                            }
-                          )}
+{participantes.length > 2 && (
+  <span className="week-turn-more">
+    +{participantes.length - 2}{' '}
+    {participantes.length - 2 === 1
+      ? 'paciente'
+      : 'pacientes'}
+  </span>
+)}
 
                         </div>
 
